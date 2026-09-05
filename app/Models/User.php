@@ -34,6 +34,17 @@ class User extends Authenticatable implements PasskeyUser
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable, PasskeyAuthenticatable, TwoFactorAuthenticatable;
 
+    protected $fillable = [
+        'name',
+        'email',
+        'password',
+        'nomor_petugas',
+        'role',
+        'aktif',
+        'must_change_password',
+        'password_changed_at',
+    ];
+
     /**
      * Get the attributes that should be cast.
      *
@@ -45,6 +56,7 @@ class User extends Authenticatable implements PasskeyUser
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'two_factor_confirmed_at' => 'datetime',
+            'password_changed_at' => 'datetime',
         ];
     }
 }
