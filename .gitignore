@@ -27,3 +27,7 @@ yarn-error.log
 /.nova
 /.vscode
 /.zed
+AGENTS.md
+agent.md
+spec.md
+boost.json
