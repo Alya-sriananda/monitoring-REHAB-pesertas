@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->string('nomor_petugas', 50)->unique()->after('id');
+            $table->string('npp', 50)->unique()->after('id');
             $table->string('role', 50)->default('petugas')->after('password');
             $table->boolean('aktif')->default(true)->after('role');
             $table->boolean('must_change_password')->default(true)->after('aktif');
@@ -30,7 +30,7 @@ return new class extends Migration
     {
         Schema::table('users', function (Blueprint $table) {
             $table->dropColumn([
-                'nomor_petugas',
+                'npp',
                 'role',
                 'aktif',
                 'must_change_password',
