@@ -1,5 +1,5 @@
-import { Form, Head } from '@inertiajs/react';
-import { useRef } from 'react';
+import { Head, useForm } from '@inertiajs/react';
+import { useRef, FormEventHandler } from 'react';
 import SecurityController from '@/actions/App/Http/Controllers/Settings/SecurityController';
 import Heading from '@/components/heading';
 import InputError from '@/components/input-error';
@@ -7,133 +7,123 @@ import PasswordInput from '@/components/password-input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { edit } from '@/routes/security';
-import type { Props as ManagePasskeysProps } from '@/components/manage-passkeys';
-import ManagePasskeys from '@/components/manage-passkeys';
-import type { Props as ManageTwoFactorProps } from '@/components/manage-two-factor';
-import ManageTwoFactor from '@/components/manage-two-factor';
+import { CheckCircle2, Circle } from 'lucide-react';
 
-// oxfmt-ignore
 type Props = {
     passwordRules: string;
-} & ManagePasskeysProps &
-    ManageTwoFactorProps;
+};
 
 export default function Security(props: Props) {
     const passwordInput = useRef<HTMLInputElement>(null);
     const currentPasswordInput = useRef<HTMLInputElement>(null);
 
+    const { data, setData, put, errors, processing, reset } = useForm({
+        current_password: '',
+        password: '',
+    });
+
+    const password = data.password || '';
+    const requirements = [
+        { label: 'Minimal 8 karakter', met: password.length >= 8 },
+        { label: 'Satu huruf besar', met: /[A-Z]/.test(password) },
+        { label: 'Satu angka', met: /[0-9]/.test(password) },
+        { label: 'Satu simbol', met: /[^A-Za-z0-9]/.test(password) },
+    ];
+
+    const submit: FormEventHandler = (e) => {
+        e.preventDefault();
+
+        put(SecurityController.update.url(), {
+            preserveScroll: true,
+            onSuccess: () => reset('password', 'current_password'),
+            onError: (errors) => {
+                if (errors.password) {
+                    passwordInput.current?.focus();
+                }
+
+                if (errors.current_password) {
+                    currentPasswordInput.current?.focus();
+                }
+            },
+        });
+    };
+
     return (
         <>
-            <Head title="Security settings" />
+            <Head title="Profil" />
 
-            <h1 className="sr-only">Security settings</h1>
+            <h1 className="sr-only">Profil</h1>
 
             <div className="space-y-6">
                 <Heading
                     variant="small"
-                    title="Update password"
-                    description="Ensure your account is using a long, random password to stay secure"
+                    title="Ubah Kata Sandi"
+                    description="Gunakan kata sandi yang kuat untuk menjaga keamanan akun Anda."
                 />
 
-                <Form
-                    {...SecurityController.update.form()}
-                    options={{
-                        preserveScroll: true,
-                    }}
-                    resetOnError={[
-                        'password',
-                        'password_confirmation',
-                        'current_password',
-                    ]}
-                    resetOnSuccess
-                    onError={(errors) => {
-                        if (errors.password) {
-                            passwordInput.current?.focus();
-                        }
+                <form onSubmit={submit} className="space-y-6">
+                    <div className="grid gap-2">
+                        <Label htmlFor="current_password">
+                            Kata Sandi Saat Ini
+                        </Label>
 
-                        if (errors.current_password) {
-                            currentPasswordInput.current?.focus();
-                        }
-                    }}
-                    className="space-y-6"
-                >
-                    {({ errors, processing }) => (
-                        <>
-                            <div className="grid gap-2">
-                                <Label htmlFor="current_password">
-                                    Current password
-                                </Label>
+                        <PasswordInput
+                            id="current_password"
+                            ref={currentPasswordInput}
+                            name="current_password"
+                            value={data.current_password}
+                            onChange={(e) => setData('current_password', e.target.value)}
+                            className="mt-1 block w-full"
+                            autoComplete="current-password"
+                            placeholder="Kata sandi saat ini"
+                        />
 
-                                <PasswordInput
-                                    id="current_password"
-                                    ref={currentPasswordInput}
-                                    name="current_password"
-                                    className="mt-1 block w-full"
-                                    autoComplete="current-password"
-                                    placeholder="Current password"
-                                />
+                        <InputError message={errors.current_password} />
+                    </div>
 
-                                <InputError message={errors.current_password} />
-                            </div>
+                    <div className="grid gap-2">
+                        <Label htmlFor="password">Kata Sandi Baru</Label>
 
-                            <div className="grid gap-2">
-                                <Label htmlFor="password">New password</Label>
+                        <PasswordInput
+                            id="password"
+                            ref={passwordInput}
+                            name="password"
+                            value={data.password}
+                            onChange={(e) => setData('password', e.target.value)}
+                            className="mt-1 block w-full"
+                            autoComplete="new-password"
+                            placeholder="Kata sandi baru"
+                            passwordrules={props.passwordRules}
+                        />
 
-                                <PasswordInput
-                                    id="password"
-                                    ref={passwordInput}
-                                    name="password"
-                                    className="mt-1 block w-full"
-                                    autoComplete="new-password"
-                                    placeholder="New password"
-                                    passwordrules={props.passwordRules}
-                                />
+                        <InputError message={errors.password} />
+                        
+                        <div className="mt-2 space-y-2">
+                            {requirements.map((req, i) => (
+                                <div key={i} className="flex items-center space-x-2 text-sm text-muted-foreground">
+                                    {req.met ? (
+                                        <CheckCircle2 className="h-4 w-4 text-green-500" />
+                                    ) : (
+                                        <Circle className="h-4 w-4" />
+                                    )}
+                                    <span className={req.met ? "text-green-600 font-medium" : ""}>
+                                        {req.label}
+                                    </span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
 
-                                <InputError message={errors.password} />
-                            </div>
-
-                            <div className="grid gap-2">
-                                <Label htmlFor="password_confirmation">
-                                    Confirm password
-                                </Label>
-
-                                <PasswordInput
-                                    id="password_confirmation"
-                                    name="password_confirmation"
-                                    className="mt-1 block w-full"
-                                    autoComplete="new-password"
-                                    placeholder="Confirm password"
-                                    passwordrules={props.passwordRules}
-                                />
-
-                                <InputError
-                                    message={errors.password_confirmation}
-                                />
-                            </div>
-
-                            <div className="flex items-center gap-4">
-                                <Button
-                                    disabled={processing}
-                                    data-test="update-password-button"
-                                >
-                                    Save
-                                </Button>
-                            </div>
-                        </>
-                    )}
-                </Form>
+                    <div className="flex items-center gap-4">
+                        <Button
+                            disabled={processing}
+                            data-test="update-password-button"
+                        >
+                            Simpan
+                        </Button>
+                    </div>
+                </form>
             </div>
-
-            <ManageTwoFactor
-                canManageTwoFactor={props.canManageTwoFactor}
-                requiresConfirmation={props.requiresConfirmation}
-                twoFactorEnabled={props.twoFactorEnabled}
-            />
-
-            <ManagePasskeys
-                canManagePasskeys={props.canManagePasskeys}
-                passkeys={props.passkeys}
-            />
         </>
     );
 }
@@ -141,7 +131,7 @@ export default function Security(props: Props) {
 Security.layout = {
     breadcrumbs: [
         {
-            title: 'Security settings',
+            title: 'Profil',
             href: edit(),
         },
     ],
