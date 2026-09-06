@@ -2,10 +2,15 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Peserta extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'noka',
         'nama',
@@ -18,8 +23,18 @@ class Peserta extends Model
         'daerah_id',
     ];
 
-    public function daerah()
+    public function daerah(): BelongsTo
     {
         return $this->belongsTo(Daerah::class);
+    }
+
+    public function rehabCases(): HasMany
+    {
+        return $this->hasMany(RehabCase::class);
+    }
+
+    public function batches(): HasMany
+    {
+        return $this->hasMany(PesertaBatch::class);
     }
 }

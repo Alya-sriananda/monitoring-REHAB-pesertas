@@ -2,10 +2,14 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class PesertaBatch extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'batch_id',
         'peserta_id',
@@ -21,12 +25,12 @@ class PesertaBatch extends Model
         'tottagsdbulaniniawal', 'user_sipp',
     ];
 
-    public function batch()
+    public function batch(): BelongsTo
     {
         return $this->belongsTo(Batch::class);
     }
 
-    public function peserta()
+    public function peserta(): BelongsTo
     {
         return $this->belongsTo(Peserta::class);
     }

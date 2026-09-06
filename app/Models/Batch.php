@@ -2,10 +2,14 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Batch extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'tanggal_data',
         'nama_file',
@@ -18,7 +22,7 @@ class Batch extends Model
         'tanggal_data' => 'date',
     ];
 
-    public function importer()
+    public function importer(): BelongsTo
     {
         return $this->belongsTo(User::class, 'imported_by');
     }

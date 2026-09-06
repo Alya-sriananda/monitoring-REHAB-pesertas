@@ -2,10 +2,14 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class SippVerification extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'rehab_case_id',
         'batch_id',
@@ -31,17 +35,17 @@ class SippVerification extends Model
         'tanggal_akhir_cicilan' => 'date',
     ];
 
-    public function case()
+    public function case(): BelongsTo
     {
         return $this->belongsTo(RehabCase::class, 'rehab_case_id');
     }
 
-    public function batch()
+    public function batch(): BelongsTo
     {
         return $this->belongsTo(Batch::class);
     }
 
-    public function user()
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
