@@ -2,6 +2,8 @@ import { Head, Link } from '@inertiajs/react';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Upload } from 'lucide-react';
+import { dashboard } from '@/routes';
+import batches from '@/routes/batches';
 
 interface Batch {
     id: number;
@@ -32,10 +34,14 @@ interface PaginationData {
     links: { url: string | null; label: string; active: boolean }[];
 }
 
-export default function BatchesIndex({ batches }: { batches: PaginationData }) {
+export default function BatchesIndex({
+    batches: paginationBatches,
+}: {
+    batches: PaginationData;
+}) {
     const breadcrumbs: BreadcrumbItem[] = [
-        { title: 'Dashboard', href: route('dashboard') },
-        { title: 'Batch & Import', href: route('batches.index') },
+        { title: 'Dashboard', href: dashboard.url() },
+        { title: 'Batch & Import', href: batches.index.url() },
     ];
 
     return (
@@ -54,7 +60,7 @@ export default function BatchesIndex({ batches }: { batches: PaginationData }) {
                         </p>
                     </div>
                     <Link
-                        href={route('batches.create')}
+                        href={batches.create.url()}
                         className="flex items-center gap-2 rounded-md bg-[#22577A] px-4 py-2 text-sm font-medium text-white hover:bg-[#1a4360]"
                     >
                         <Upload className="h-4 w-4" />
@@ -94,7 +100,7 @@ export default function BatchesIndex({ batches }: { batches: PaginationData }) {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-200">
-                                {batches.data.length === 0 ? (
+                                {paginationBatches.data.length === 0 ? (
                                     <tr>
                                         <td
                                             colSpan={8}
@@ -104,7 +110,7 @@ export default function BatchesIndex({ batches }: { batches: PaginationData }) {
                                         </td>
                                     </tr>
                                 ) : (
-                                    batches.data.map((batch) => (
+                                    paginationBatches.data.map((batch) => (
                                         <tr
                                             key={batch.id}
                                             className="hover:bg-slate-50"
@@ -148,8 +154,7 @@ export default function BatchesIndex({ batches }: { batches: PaginationData }) {
                                             </td>
                                             <td className="px-6 py-4 text-right">
                                                 <Link
-                                                    href={route(
-                                                        'batches.show',
+                                                    href={batches.show.url(
                                                         batch.id,
                                                     )}
                                                     className="text-[#22577A] hover:underline"
@@ -164,14 +169,14 @@ export default function BatchesIndex({ batches }: { batches: PaginationData }) {
                         </table>
                     </div>
                     {/* Pagination */}
-                    {batches.last_page > 1 && (
+                    {paginationBatches.last_page > 1 && (
                         <div className="flex items-center justify-between border-t border-slate-200 bg-white px-6 py-3">
                             <div className="text-sm text-slate-500">
-                                Menampilkan {batches.data.length} dari{' '}
-                                {batches.total} hasil
+                                Menampilkan {paginationBatches.data.length} dari{' '}
+                                {paginationBatches.total} hasil
                             </div>
                             <div className="flex gap-1">
-                                {batches.links.map((link, i) =>
+                                {paginationBatches.links.map((link, i) =>
                                     link.url ? (
                                         <Link
                                             key={i}

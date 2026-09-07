@@ -154,18 +154,35 @@ class BatchImportService
 
                 if (! $noka) {
                     $stats['jumlah_invalid']++;
-                    $stats['import_errors'][] = ['row' => $stats['jumlah_row_asli'], 'noka' => 'N/A', 'reason' => 'Invalid Noka'];
+                    $stats['import_errors'][] = [
+                        'row' => $stats['jumlah_row_asli'],
+                        'noka' => 'N/A',
+                        'kategori' => 'Invalid',
+                        'reason' => 'Invalid Noka'
+                    ];
 
                     return;
                 }
 
                 if (isset($seenNokas[$noka])) {
                     $prevRow = $seenNokas[$noka];
-                    if ($this->isConflict($prevRow, $row)) {
+                    $conflictField = $this->isConflict($prevRow, $row);
+                    if ($conflictField !== false) {
                         $stats['jumlah_conflict']++;
-                        $stats['import_errors'][] = ['row' => $stats['jumlah_row_asli'], 'noka' => $noka, 'reason' => 'Konflik baris di file Excel'];
+                        $stats['import_errors'][] = [
+                            'row' => $stats['jumlah_row_asli'],
+                            'noka' => $noka,
+                            'kategori' => 'Conflict',
+                            'reason' => 'Data berbeda pada field: ' . $conflictField
+                        ];
                     } else {
                         $stats['jumlah_duplicate']++;
+                        $stats['import_errors'][] = [
+                            'row' => $stats['jumlah_row_asli'],
+                            'noka' => $noka,
+                            'kategori' => 'Duplicate',
+                            'reason' => 'Baris identik dengan baris sebelumnya'
+                        ];
                     }
 
                     return;
@@ -180,7 +197,12 @@ class BatchImportService
                     $daerahName = self::normalizeDaerahName($row['nmdati2']);
                     $daerahId = $daerahCache[$daerahName] ?? null;
                     if (! $daerahId) {
-                        $stats['import_errors'][] = ['row' => $stats['jumlah_row_asli'], 'noka' => $noka, 'reason' => "Daerah {$row['nmdati2']} tidak ditemukan di master."];
+                        $stats['import_errors'][] = [
+                            'row' => $stats['jumlah_row_asli'],
+                            'noka' => $noka,
+                            'kategori' => 'Warning',
+                            'reason' => "Daerah {$row['nmdati2']} tidak ditemukan di master."
+                        ];
                     }
                 }
 
@@ -364,7 +386,7 @@ class BatchImportService
         return $name;
     }
 
-    private function isConflict(array $row1, array $row2): bool
+    private function isConflict(array $row1, array $row2): string|false
     {
         // Define important fields that shouldn't change for the same NOKA in one file
         $importantFields = [
@@ -372,8 +394,11 @@ class BatchImportService
         ];
 
         foreach ($importantFields as $field) {
-            if (isset($row1[$field]) && isset($row2[$field]) && $row1[$field] !== $row2[$field]) {
-                return true;
+            $val1 = isset($row1[$field]) ? trim((string)$row1[$field]) : '';
+            $val2 = isset($row2[$field]) ? trim((string)$row2[$field]) : '';
+            
+            if ($val1 !== $val2) {
+                return $field;
             }
         }
 

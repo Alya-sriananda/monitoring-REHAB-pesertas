@@ -69,7 +69,7 @@ export default function BatchShow({
                     </div>
                     {/* Placeholder link for Peserta index filtered by batch */}
                     <Link
-                        href={`/dashboard?batch_id=${batch.id}`}
+                        href={`/peserta?batch_id=${batch.id}`}
                         className="flex items-center gap-2 rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50"
                     >
                         <Users className="h-4 w-4" />
@@ -193,7 +193,7 @@ export default function BatchShow({
                     <div className="overflow-hidden rounded-lg border border-red-200 bg-white shadow-sm">
                         <div className="flex items-center justify-between border-b border-red-200 bg-red-50 px-6 py-4">
                             <h2 className="text-base font-semibold text-red-900">
-                                Laporan Conflict & Invalid
+                                Audit Skip & Warning
                             </h2>
                             <span className="text-sm font-medium text-red-600">
                                 {import_errors.length} baris dicatat
@@ -210,7 +210,10 @@ export default function BatchShow({
                                             NOKA
                                         </th>
                                         <th className="px-6 py-3 font-medium">
-                                            Alasan Skip
+                                            Kategori
+                                        </th>
+                                        <th className="px-6 py-3 font-medium">
+                                            Alasan Skip / Pesan
                                         </th>
                                     </tr>
                                 </thead>
@@ -230,7 +233,30 @@ export default function BatchShow({
                                                     err.data?.noka ||
                                                     '-'}
                                             </td>
-                                            <td className="px-6 py-3 text-red-600">
+                                            <td className="px-6 py-3">
+                                                <span
+                                                    className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
+                                                        err.kategori ===
+                                                        'Conflict'
+                                                            ? 'bg-red-100 text-red-800'
+                                                            : err.kategori ===
+                                                                'Duplicate'
+                                                              ? 'bg-slate-100 text-slate-800'
+                                                              : err.kategori ===
+                                                                  'Warning'
+                                                                ? 'bg-amber-100 text-amber-800'
+                                                                : err.kategori ===
+                                                                    'Invalid'
+                                                                  ? 'bg-red-100 text-red-800'
+                                                                  : 'bg-gray-100 text-gray-800'
+                                                    }`}
+                                                >
+                                                    {err.kategori || 'Error'}
+                                                </span>
+                                            </td>
+                                            <td
+                                                className={`px-6 py-3 ${err.kategori === 'Warning' ? 'text-amber-600' : err.kategori === 'Duplicate' ? 'text-slate-600' : 'text-red-600'}`}
+                                            >
                                                 {err.reason}
                                             </td>
                                         </tr>
