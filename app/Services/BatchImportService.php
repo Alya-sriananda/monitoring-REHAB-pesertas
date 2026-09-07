@@ -130,7 +130,10 @@ class BatchImportService
             $reader = SimpleExcelReader::create(Storage::path($filePath));
 
             $seenNokas = [];
-            $daerahCache = Daerah::pluck('id', 'nama')->toArray(); // 'PADANG' => 1
+            $daerahCache = [];
+            foreach (Daerah::all() as $daerah) {
+                $daerahCache[self::normalizeDaerahName($daerah->nama)] = $daerah->id;
+            }
 
             $stats = [
                 'jumlah_row_asli' => 0,
@@ -174,10 +177,10 @@ class BatchImportService
                 // Map Daerah
                 $daerahId = null;
                 if (! empty($row['nmdati2'])) {
-                    $daerahName = strtoupper(trim($row['nmdati2']));
+                    $daerahName = self::normalizeDaerahName($row['nmdati2']);
                     $daerahId = $daerahCache[$daerahName] ?? null;
                     if (! $daerahId) {
-                        $stats['import_errors'][] = ['row' => $stats['jumlah_row_asli'], 'noka' => $noka, 'reason' => "Daerah {$daerahName} tidak ditemukan."];
+                        $stats['import_errors'][] = ['row' => $stats['jumlah_row_asli'], 'noka' => $noka, 'reason' => "Daerah {$row['nmdati2']} tidak ditemukan di master."];
                     }
                 }
 
@@ -350,6 +353,15 @@ class BatchImportService
         $num = preg_replace('/[^0-9]/', '', $value);
 
         return $num === '' ? null : (int) $num;
+    }
+
+    public static function normalizeDaerahName(string $name): string
+    {
+        $name = strtolower($name);
+        $name = str_replace(['.', ','], '', $name);
+        $name = preg_replace('/\s+/', ' ', trim($name));
+
+        return $name;
     }
 
     private function isConflict(array $row1, array $row2): bool

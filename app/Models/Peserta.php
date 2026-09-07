@@ -33,6 +33,11 @@ class Peserta extends Model
         return $this->hasMany(RehabCase::class);
     }
 
+    public function rehabCaseMembers(): HasMany
+    {
+        return $this->hasMany(RehabCaseMember::class);
+    }
+
     public function batches(): HasMany
     {
         return $this->hasMany(PesertaBatch::class);

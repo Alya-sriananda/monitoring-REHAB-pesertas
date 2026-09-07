@@ -134,7 +134,7 @@ class ExcelImportTest extends TestCase
 
         $filePath = $previewResponse->json('file_path');
 
-        $importResponse = $this->actingAs($this->admin)->post(route('batches.import'), [
+        $importResponse = $this->actingAs($this->admin)->post(route('batches.store'), [
             'file_path' => $filePath,
             'original_name' => 'test_import.csv',
             'tanggal_data' => '2026-09-01',
@@ -178,7 +178,7 @@ class ExcelImportTest extends TestCase
             'file' => clone $file,
             'tanggal_data' => '2026-09-01',
         ]);
-        $this->actingAs($this->admin)->post(route('batches.import'), [
+        $this->actingAs($this->admin)->post(route('batches.store'), [
             'file_path' => $preview1->json('file_path'),
             'original_name' => 'test_import.csv',
             'tanggal_data' => '2026-09-01',

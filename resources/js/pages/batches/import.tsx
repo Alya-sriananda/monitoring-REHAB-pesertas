@@ -109,7 +109,7 @@ export default function BatchImport() {
         setStatus('importing');
 
         router.post(
-            batches.import.url(),
+            batches.store.url(),
             {
                 file_path: previewData.file_path,
                 original_name: previewData.original_name,

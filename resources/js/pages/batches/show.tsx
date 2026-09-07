@@ -1,5 +1,7 @@
 import { Head, Link } from '@inertiajs/react';
 import AppLayout from '@/layouts/app-layout';
+import { dashboard } from '@/routes';
+import batches from '@/routes/batches';
 import { type BreadcrumbItem } from '@/types';
 import {
     ArrowLeft,
@@ -38,9 +40,9 @@ export default function BatchShow({
     import_errors: any[] | null;
 }) {
     const breadcrumbs: BreadcrumbItem[] = [
-        { title: 'Dashboard', href: route('dashboard') },
-        { title: 'Batch & Import', href: route('batches.index') },
-        { title: 'Detail Batch', href: route('batches.show', batch.id) },
+        { title: 'Dashboard', href: dashboard.url() },
+        { title: 'Batch & Import', href: batches.index.url() },
+        { title: 'Detail Batch', href: batches.show.url(batch.id) },
     ];
 
     return (
@@ -51,7 +53,7 @@ export default function BatchShow({
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-4">
                         <Link
-                            href={route('batches.index')}
+                            href={batches.index.url()}
                             className="inline-flex h-8 w-8 items-center justify-center rounded-full hover:bg-slate-100"
                         >
                             <ArrowLeft className="h-5 w-5 text-slate-500" />

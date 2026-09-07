@@ -15,4 +15,9 @@ class Daerah extends Model
         'kode_dati2',
         'nama',
     ];
+
+    public function pesertas()
+    {
+        return $this->hasMany(Peserta::class, 'daerah_id');
+    }
 }

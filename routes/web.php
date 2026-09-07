@@ -13,8 +13,14 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/', [BatchController::class, 'index'])->name('index');
         Route::get('/import', [BatchController::class, 'create'])->name('create');
         Route::post('/preview', [BatchController::class, 'preview'])->name('preview');
-        Route::post('/import', [BatchController::class, 'import'])->name('import');
+        Route::post('/import', [BatchController::class, 'import'])->name('store');
         Route::get('/{batch}', [BatchController::class, 'show'])->name('show');
+    });
+
+    // Master Peserta & Detail
+    Route::prefix('peserta')->name('peserta.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\PesertaController::class, 'index'])->name('index');
+        Route::get('/{peserta}', [\App\Http\Controllers\PesertaController::class, 'show'])->name('show');
     });
 });
 
