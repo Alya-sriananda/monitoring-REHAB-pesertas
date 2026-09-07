@@ -1,10 +1,10 @@
 import { Head, Link, router } from '@inertiajs/react';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { dashboard } from '@/routes';
 import pesertaRoute from '@/routes/peserta';
-import { Search, Filter, Eye, Users } from 'lucide-react';
+import { Search, Eye } from 'lucide-react';
 // import { debounce } from 'lodash'; // We can write a simple debounce or use lodash if available
 
 // Simple debounce function
