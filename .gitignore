@@ -32,4 +32,8 @@ agent.md
 spec.md
 boost.json
 /excel
+scratch_*.php
+scratch_*.*
+scratch/
+*.xlsx
 
