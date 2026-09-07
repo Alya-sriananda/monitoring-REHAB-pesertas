@@ -25,8 +25,12 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('rehab_tables', function (Blueprint $table) {
-            //
+        Schema::table('rehab_cases', function (Blueprint $table) {
+            $table->dropColumn('sisa_tunggakan');
+        });
+
+        Schema::table('rehab_case_members', function (Blueprint $table) {
+            $table->dropColumn('sisa_tunggakan');
         });
     }
 };

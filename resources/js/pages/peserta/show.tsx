@@ -40,11 +40,10 @@ interface PesertaDetail {
         };
         installments?: {
             id: number;
-            bulan_cicilan: number;
-            tahun_cicilan: number;
+            nomor_cicilan: number;
+            periode_bulan: string;
             besaran_cicilan: string;
             tanggal_bayar: string | null;
-            status_bayar: string;
         }[];
     }[];
     batches?: {
@@ -397,16 +396,10 @@ export default function PesertaShow({ peserta }: { peserta: PesertaDetail }) {
                                                                                 }
                                                                             >
                                                                                 <td className="px-4 py-3 font-medium text-slate-900">
-                                                                                    Bulan
-                                                                                    ke-
-                                                                                    {
-                                                                                        inst.bulan_cicilan
-                                                                                    }{' '}
-                                                                                    (
-                                                                                    {
-                                                                                        inst.tahun_cicilan
-                                                                                    }
-                                                                                    )
+                                                                                    Cicilan ke-{inst.nomor_cicilan}
+                                                                                    <div className="text-xs text-slate-500 font-normal">
+                                                                                        {new Date(inst.periode_bulan).toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })}
+                                                                                    </div>
                                                                                 </td>
                                                                                 <td className="px-4 py-3 text-right text-slate-900">
                                                                                     {formatCurrency(
@@ -421,14 +414,12 @@ export default function PesertaShow({ peserta }: { peserta: PesertaDetail }) {
                                                                                 <td className="px-4 py-3">
                                                                                     <span
                                                                                         className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
-                                                                                            inst.status_bayar ===
-                                                                                            'lunas'
+                                                                                            inst.tanggal_bayar !== null
                                                                                                 ? 'bg-green-100 text-green-800'
                                                                                                 : 'bg-amber-100 text-amber-800'
                                                                                         }`}
                                                                                     >
-                                                                                        {inst.status_bayar ===
-                                                                                        'lunas'
+                                                                                        {inst.tanggal_bayar !== null
                                                                                             ? 'Lunas'
                                                                                             : 'Belum Lunas'}
                                                                                     </span>
