@@ -45,9 +45,12 @@ export default function BatchesIndex({ batches }: { batches: PaginationData }) {
             <div className="flex flex-col gap-6 p-6">
                 <div className="flex items-center justify-between">
                     <div>
-                        <h1 className="text-2xl font-semibold text-slate-900">Batch & Import</h1>
+                        <h1 className="text-2xl font-semibold text-slate-900">
+                            Batch & Import
+                        </h1>
                         <p className="mt-1 text-sm text-slate-500">
-                            Riwayat data SIPP yang telah diimport ke dalam sistem.
+                            Riwayat data SIPP yang telah diimport ke dalam
+                            sistem.
                         </p>
                     </div>
                     <Link
@@ -64,32 +67,57 @@ export default function BatchesIndex({ batches }: { batches: PaginationData }) {
                         <table className="w-full text-left text-sm text-slate-600">
                             <thead className="border-b border-slate-200 bg-slate-50 text-slate-700">
                                 <tr>
-                                    <th className="px-6 py-3 font-medium">Tanggal Data</th>
-                                    <th className="px-6 py-3 font-medium">Nama File</th>
-                                    <th className="px-6 py-3 font-medium text-right">Data Valid</th>
-                                    <th className="px-6 py-3 font-medium text-right">Baru</th>
-                                    <th className="px-6 py-3 font-medium text-right">Diperbarui</th>
-                                    <th className="px-6 py-3 font-medium">Diimport Oleh</th>
-                                    <th className="px-6 py-3 font-medium">Waktu Import</th>
-                                    <th className="px-6 py-3 font-medium text-right">Aksi</th>
+                                    <th className="px-6 py-3 font-medium">
+                                        Tanggal Data
+                                    </th>
+                                    <th className="px-6 py-3 font-medium">
+                                        Nama File
+                                    </th>
+                                    <th className="px-6 py-3 text-right font-medium">
+                                        Data Valid
+                                    </th>
+                                    <th className="px-6 py-3 text-right font-medium">
+                                        Baru
+                                    </th>
+                                    <th className="px-6 py-3 text-right font-medium">
+                                        Diperbarui
+                                    </th>
+                                    <th className="px-6 py-3 font-medium">
+                                        Diimport Oleh
+                                    </th>
+                                    <th className="px-6 py-3 font-medium">
+                                        Waktu Import
+                                    </th>
+                                    <th className="px-6 py-3 text-right font-medium">
+                                        Aksi
+                                    </th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-200">
                                 {batches.data.length === 0 ? (
                                     <tr>
-                                        <td colSpan={8} className="px-6 py-8 text-center text-slate-500">
+                                        <td
+                                            colSpan={8}
+                                            className="px-6 py-8 text-center text-slate-500"
+                                        >
                                             Belum ada data yang diimport.
                                         </td>
                                     </tr>
                                 ) : (
                                     batches.data.map((batch) => (
-                                        <tr key={batch.id} className="hover:bg-slate-50">
+                                        <tr
+                                            key={batch.id}
+                                            className="hover:bg-slate-50"
+                                        >
                                             <td className="px-6 py-4 whitespace-nowrap">
                                                 {batch.tanggal_data}
                                             </td>
                                             <td className="px-6 py-4">
-                                                <div className="font-medium text-slate-900">{batch.nama_file}</div>
-                                                {batch.status_proses !== 'selesai' && (
+                                                <div className="font-medium text-slate-900">
+                                                    {batch.nama_file}
+                                                </div>
+                                                {batch.status_proses !==
+                                                    'selesai' && (
                                                     <span className="inline-flex items-center rounded-full bg-yellow-100 px-2 py-0.5 text-xs font-medium text-yellow-800">
                                                         {batch.status_proses}
                                                     </span>
@@ -98,21 +126,32 @@ export default function BatchesIndex({ batches }: { batches: PaginationData }) {
                                             <td className="px-6 py-4 text-right tabular-nums">
                                                 {batch.jumlah_data}
                                             </td>
-                                            <td className="px-6 py-4 text-right text-[#57CC99] font-medium tabular-nums">
-                                                {batch.jumlah_peserta_baru > 0 ? `+${batch.jumlah_peserta_baru}` : '-'}
+                                            <td className="px-6 py-4 text-right font-medium text-[#57CC99] tabular-nums">
+                                                {batch.jumlah_peserta_baru > 0
+                                                    ? `+${batch.jumlah_peserta_baru}`
+                                                    : '-'}
                                             </td>
-                                            <td className="px-6 py-4 text-right text-[#38A3A5] font-medium tabular-nums">
-                                                {batch.jumlah_peserta_diperbarui > 0 ? `+${batch.jumlah_peserta_diperbarui}` : '-'}
+                                            <td className="px-6 py-4 text-right font-medium text-[#38A3A5] tabular-nums">
+                                                {batch.jumlah_peserta_diperbarui >
+                                                0
+                                                    ? `+${batch.jumlah_peserta_diperbarui}`
+                                                    : '-'}
                                             </td>
                                             <td className="px-6 py-4">
-                                                {batch.importer?.name || 'Sistem'}
+                                                {batch.importer?.name ||
+                                                    'Sistem'}
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap">
-                                                {new Date(batch.created_at).toLocaleString('id-ID')}
+                                                {new Date(
+                                                    batch.created_at,
+                                                ).toLocaleString('id-ID')}
                                             </td>
                                             <td className="px-6 py-4 text-right">
                                                 <Link
-                                                    href={route('batches.show', batch.id)}
+                                                    href={route(
+                                                        'batches.show',
+                                                        batch.id,
+                                                    )}
                                                     className="text-[#22577A] hover:underline"
                                                 >
                                                     Detail
@@ -128,10 +167,11 @@ export default function BatchesIndex({ batches }: { batches: PaginationData }) {
                     {batches.last_page > 1 && (
                         <div className="flex items-center justify-between border-t border-slate-200 bg-white px-6 py-3">
                             <div className="text-sm text-slate-500">
-                                Menampilkan {batches.data.length} dari {batches.total} hasil
+                                Menampilkan {batches.data.length} dari{' '}
+                                {batches.total} hasil
                             </div>
                             <div className="flex gap-1">
-                                {batches.links.map((link, i) => (
+                                {batches.links.map((link, i) =>
                                     link.url ? (
                                         <Link
                                             key={i}
@@ -141,16 +181,20 @@ export default function BatchesIndex({ batches }: { batches: PaginationData }) {
                                                     ? 'bg-[#22577A] text-white'
                                                     : 'text-slate-600 hover:bg-slate-100'
                                             }`}
-                                            dangerouslySetInnerHTML={{ __html: link.label }}
+                                            dangerouslySetInnerHTML={{
+                                                __html: link.label,
+                                            }}
                                         />
                                     ) : (
                                         <span
                                             key={i}
                                             className="rounded px-3 py-1 text-sm text-slate-400"
-                                            dangerouslySetInnerHTML={{ __html: link.label }}
+                                            dangerouslySetInnerHTML={{
+                                                __html: link.label,
+                                            }}
                                         />
-                                    )
-                                ))}
+                                    ),
+                                )}
                             </div>
                         </div>
                     )}

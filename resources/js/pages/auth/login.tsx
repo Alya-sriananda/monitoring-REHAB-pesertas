@@ -1,7 +1,7 @@
 import { Form, Head } from '@inertiajs/react';
 import InputError from '@/components/input-error';
 import PasswordInput from '@/components/password-input';
-import TextLink from '@/components/text-link';
+
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
@@ -31,7 +31,9 @@ export default function Login({ status }: Props) {
                     <>
                         <div className="grid gap-6">
                             <div className="grid gap-2">
-                                <Label htmlFor="npp">Nomor Pokok Pegawai (NPP)</Label>
+                                <Label htmlFor="npp">
+                                    Nomor Pokok Pegawai (NPP)
+                                </Label>
                                 <Input
                                     id="npp"
                                     type="text"
@@ -80,8 +82,6 @@ export default function Login({ status }: Props) {
                                 Log in
                             </Button>
                         </div>
-
-
                     </>
                 )}
             </Form>

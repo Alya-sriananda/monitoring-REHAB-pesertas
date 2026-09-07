@@ -23,8 +23,9 @@ return new class extends Migration
             $table->string('noka_pendaftar', 30)->nullable();
             $table->string('npp_petugas', 50)->nullable();
             $table->date('tanggal_daftar_rehab')->nullable();
-            $table->decimal('total_cicilan_bulan_ini', 15, 0)->nullable();
-            $table->decimal('sisa_tunggakan_sipp', 15, 0)->nullable();
+            $table->decimal('tagihan_bulan_berjalan', 15, 0)->nullable();
+            $table->decimal('tagihan_sebelum_bulan_berjalan', 15, 0)->nullable();
+            $table->string('status_pembayaran_bulan_berjalan', 50)->nullable();
             $table->date('tanggal_akhir_cicilan')->nullable();
             $table->unsignedInteger('jumlah_peserta_sipp')->nullable();
             $table->text('catatan')->nullable();

@@ -72,7 +72,9 @@ export default function Security(props: Props) {
                             ref={currentPasswordInput}
                             name="current_password"
                             value={data.current_password}
-                            onChange={(e) => setData('current_password', e.target.value)}
+                            onChange={(e) =>
+                                setData('current_password', e.target.value)
+                            }
                             className="mt-1 block w-full"
                             autoComplete="current-password"
                             placeholder="Kata sandi saat ini"
@@ -89,7 +91,9 @@ export default function Security(props: Props) {
                             ref={passwordInput}
                             name="password"
                             value={data.password}
-                            onChange={(e) => setData('password', e.target.value)}
+                            onChange={(e) =>
+                                setData('password', e.target.value)
+                            }
                             className="mt-1 block w-full"
                             autoComplete="new-password"
                             placeholder="Kata sandi baru"
@@ -97,16 +101,25 @@ export default function Security(props: Props) {
                         />
 
                         <InputError message={errors.password} />
-                        
+
                         <div className="mt-2 space-y-2">
                             {requirements.map((req, i) => (
-                                <div key={i} className="flex items-center space-x-2 text-sm text-muted-foreground">
+                                <div
+                                    key={i}
+                                    className="text-muted-foreground flex items-center space-x-2 text-sm"
+                                >
                                     {req.met ? (
                                         <CheckCircle2 className="h-4 w-4 text-green-500" />
                                     ) : (
                                         <Circle className="h-4 w-4" />
                                     )}
-                                    <span className={req.met ? "text-green-600 font-medium" : ""}>
+                                    <span
+                                        className={
+                                            req.met
+                                                ? 'font-medium text-green-600'
+                                                : ''
+                                        }
+                                    >
                                         {req.label}
                                     </span>
                                 </div>
