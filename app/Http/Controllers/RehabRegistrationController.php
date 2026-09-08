@@ -20,10 +20,36 @@ class RehabRegistrationController extends Controller
 
     public function store(StoreRehabRegistrationRequest $request, Peserta $peserta): RedirectResponse
     {
-        // 1. Protect against overwriting existing ACTIVE cases.
+        // 1. Process members: handle manual additions
+        $processedMembers = [];
+        $memberIds = [];
+        foreach ($request->input('members') as $memberData) {
+            $pesertaId = $memberData['peserta_id'] ?? null;
+            if (! $pesertaId) {
+                // Find existing by NOKA or create a new participant inheriting profile from $peserta
+                $newPeserta = Peserta::firstOrCreate(
+                    ['noka' => $memberData['noka']],
+                    [
+                        'nama' => $memberData['nama'],
+                        'no_hp' => $peserta->no_hp,
+                        'email' => $peserta->email,
+                        'alamat' => $peserta->alamat,
+                        'daerah_id' => $peserta->daerah_id,
+                        'status_aktif' => $peserta->status_aktif,
+                        'nopendaftar' => $peserta->nopendaftar,
+                        'nopenghubung' => $peserta->nopenghubung,
+                        // Other required default fields could be populated here if necessary
+                    ]
+                );
+                $pesertaId = $newPeserta->id;
+            }
+            $memberData['peserta_id'] = $pesertaId;
+            $processedMembers[] = $memberData;
+            $memberIds[] = $pesertaId;
+        }
+
+        // 2. Protect against overwriting existing ACTIVE cases.
         // A Peserta shouldn't be added to a new active case if they already have one.
-        // Also check for the candidate members.
-        $memberIds = collect($request->input('members'))->pluck('peserta_id')->toArray();
         $existingActiveCasesCount = DB::table('rehab_case_members')
             ->join('rehab_cases', 'rehab_cases.id', '=', 'rehab_case_members.rehab_case_id')
             ->whereIn('rehab_case_members.peserta_id', $memberIds)
@@ -36,8 +62,8 @@ class RehabRegistrationController extends Controller
             ]);
         }
 
-        // 2. Wrap in a single transaction
-        DB::transaction(function () use ($request, $peserta) {
+        // 3. Wrap in a single transaction
+        DB::transaction(function () use ($request, $peserta, $processedMembers) {
             // A. Create RehabCase and Members via Service
             $caseData = [
                 'peserta_id' => $peserta->id, // Head of the manual case creation
@@ -50,22 +76,18 @@ class RehabRegistrationController extends Controller
                 'status_rehab' => 'AKTIF', // Default active on registration
             ];
 
-            $rehabCase = $this->rehabCaseService->createCaseWithMembers($caseData, $request->input('members'));
+            $rehabCase = $this->rehabCaseService->createCaseWithMembers($caseData, $processedMembers);
 
             // B. Create SIPP Verification Snapshot
             SippVerification::create([
                 'rehab_case_id' => $rehabCase->id,
                 'user_id' => auth()->id(),
-                'tanggal_cek' => $request->input('sipp_tanggal_cek'),
+                'tanggal_cek' => now(),
                 'terdaftar_rehab' => $request->input('sipp_terdaftar_rehab'),
-                'status_rehab' => $request->input('sipp_status_rehab'),
                 'id_cicilan' => $request->input('sipp_id_cicilan'),
                 'noka_pendaftar' => $request->input('sipp_noka_pendaftar'),
                 'npp_petugas' => $request->input('sipp_npp_petugas'),
                 'tanggal_daftar_rehab' => $request->input('sipp_tanggal_daftar_rehab'),
-                'tagihan_bulan_berjalan' => $request->input('sipp_tagihan_bulan_berjalan'),
-                'tagihan_sebelum_bulan_berjalan' => $request->input('sipp_tagihan_sebelum_bulan_berjalan'),
-                'status_pembayaran_bulan_berjalan' => $request->input('sipp_status_pembayaran_bulan_berjalan'),
                 'tanggal_akhir_cicilan' => $request->input('sipp_tanggal_akhir_cicilan'),
                 'jumlah_peserta_sipp' => $request->input('sipp_jumlah_peserta_sipp'),
                 'catatan' => $request->input('sipp_catatan'),

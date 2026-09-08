@@ -15,16 +15,11 @@ class StoreRehabRegistrationRequest extends FormRequest
     {
         return [
             // SIPP Verification Snapshot
-            'sipp_tanggal_cek' => ['required', 'date'],
             'sipp_terdaftar_rehab' => ['required', 'boolean'],
-            'sipp_status_rehab' => ['nullable', 'string', 'max:50'],
             'sipp_id_cicilan' => ['nullable', 'string', 'max:100'],
             'sipp_noka_pendaftar' => ['nullable', 'string', 'max:30'],
             'sipp_npp_petugas' => ['nullable', 'string', 'max:50'],
             'sipp_tanggal_daftar_rehab' => ['nullable', 'date'],
-            'sipp_tagihan_bulan_berjalan' => ['nullable', 'numeric', 'min:0'],
-            'sipp_tagihan_sebelum_bulan_berjalan' => ['nullable', 'numeric', 'min:0'],
-            'sipp_status_pembayaran_bulan_berjalan' => ['nullable', 'string', 'max:50'],
             'sipp_tanggal_akhir_cicilan' => ['nullable', 'date'],
             'sipp_jumlah_peserta_sipp' => ['nullable', 'integer', 'min:1'],
             'sipp_catatan' => ['nullable', 'string'],
@@ -35,7 +30,9 @@ class StoreRehabRegistrationRequest extends FormRequest
 
             // Members
             'members' => ['required', 'array', 'min:1'],
-            'members.*.peserta_id' => ['required', 'exists:pesertas,id'],
+            'members.*.peserta_id' => ['nullable', 'exists:pesertas,id'],
+            'members.*.nama' => ['required_without:members.*.peserta_id', 'nullable', 'string', 'max:255'],
+            'members.*.noka' => ['required_without:members.*.peserta_id', 'nullable', 'string', 'max:50'],
             'members.*.tagihan_awal' => ['required', 'numeric', 'min:1'],
             'members.*.is_pendaftar' => ['boolean'],
             'members.*.jml_bulan_menunggak_awal' => ['nullable', 'integer', 'min:0'],

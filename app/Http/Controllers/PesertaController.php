@@ -74,9 +74,12 @@ class PesertaController extends Controller
                 ->get();
         }
 
+        $latestBatch = $peserta->batches->sortByDesc('created_at')->first();
+
         return Inertia::render('peserta/show', [
             'peserta' => $peserta,
             'candidates' => $candidates,
+            'latestBatch' => $latestBatch,
         ]);
     }
 }

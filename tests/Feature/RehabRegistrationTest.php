@@ -7,6 +7,7 @@ use App\Models\Peserta;
 use App\Models\RehabCase;
 use App\Models\RehabCaseMember;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -57,10 +58,11 @@ class RehabRegistrationTest extends TestCase
 
     public function test_valid_registration_creates_case_members_installments_and_sipp_verification()
     {
+        $now = now();
+        Carbon::setTestNow($now);
+
         $payload = [
-            'sipp_tanggal_cek' => '2026-09-01',
             'sipp_terdaftar_rehab' => true,
-            'sipp_status_rehab' => 'AKTIF',
             'sipp_noka_pendaftar' => $this->peserta->noka,
             'tanggal_pendaftaran' => '2026-09-01',
             'jumlah_bulan_cicilan' => 4,
@@ -94,7 +96,7 @@ class RehabRegistrationTest extends TestCase
         // Verify SippVerification
         $this->assertDatabaseHas('sipp_verifications', [
             'rehab_case_id' => $case->id,
-            'tanggal_cek' => '2026-09-01 00:00:00',
+            'tanggal_cek' => $now->toDateTimeString(),
             'terdaftar_rehab' => 1,
         ]);
 
@@ -129,7 +131,6 @@ class RehabRegistrationTest extends TestCase
         ]);
 
         $payload = [
-            'sipp_tanggal_cek' => '2026-09-01',
             'sipp_terdaftar_rehab' => true,
             'tanggal_pendaftaran' => '2026-09-01',
             'jumlah_bulan_cicilan' => 4,
@@ -153,7 +154,6 @@ class RehabRegistrationTest extends TestCase
     public function test_validation_fails_on_missing_financial_fields()
     {
         $payload = [
-            'sipp_tanggal_cek' => '2026-09-01',
             'sipp_terdaftar_rehab' => true,
             // missing tanggal_pendaftaran
             // missing jumlah_bulan_cicilan
@@ -174,5 +174,46 @@ class RehabRegistrationTest extends TestCase
         ]);
 
         $this->assertDatabaseCount('rehab_cases', 0);
+    }
+
+    public function test_manual_participant_addition()
+    {
+        $payload = [
+            'sipp_terdaftar_rehab' => true,
+            'tanggal_pendaftaran' => '2026-09-01',
+            'jumlah_bulan_cicilan' => 1,
+            'members' => [
+                [
+                    'peserta_id' => $this->peserta->id,
+                    'tagihan_awal' => 1000000,
+                ],
+                [
+                    'peserta_id' => null, // Manual
+                    'nama' => 'Adik Manual',
+                    'noka' => '888899990000',
+                    'tagihan_awal' => 500000,
+                ],
+            ],
+        ];
+
+        $response = $this->actingAs($this->admin)->post(route('peserta.rehab.store', $this->peserta->id), $payload);
+        $response->assertSessionHasNoErrors();
+        $response->assertRedirect();
+
+        // Check if new Peserta was created and inherited data
+        $this->assertDatabaseHas('pesertas', [
+            'noka' => '888899990000',
+            'nama' => 'Adik Manual',
+            'no_hp' => $this->peserta->no_hp,
+            'daerah_id' => $this->peserta->daerah_id,
+        ]);
+
+        $newPeserta = Peserta::where('noka', '888899990000')->first();
+
+        // Check if added to RehabCaseMember
+        $this->assertDatabaseHas('rehab_case_members', [
+            'peserta_id' => $newPeserta->id,
+            'tagihan_awal' => 500000,
+        ]);
     }
 }
