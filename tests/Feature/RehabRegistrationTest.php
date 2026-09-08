@@ -95,6 +95,7 @@ class RehabRegistrationTest extends TestCase
 
         // Verify SippVerification
         $this->assertDatabaseHas('sipp_verifications', [
+            'peserta_id' => $this->peserta->id,
             'rehab_case_id' => $case->id,
             'tanggal_cek' => $now->toDateTimeString(),
             'terdaftar_rehab' => 1,
@@ -116,6 +117,35 @@ class RehabRegistrationTest extends TestCase
 
         // Verify Installments Generated (2 members * 4 months = 8 installments)
         $this->assertDatabaseCount('rehab_installments', 8);
+    }
+
+    public function test_unregistered_rehab_creates_verification_only_without_case()
+    {
+        $now = now();
+        Carbon::setTestNow($now);
+
+        $payload = [
+            'sipp_terdaftar_rehab' => false,
+            // Financial fields should not be required
+        ];
+
+        $response = $this->actingAs($this->admin)->post(route('peserta.rehab.store', $this->peserta->id), $payload);
+
+        $response->assertRedirect(route('peserta.show', $this->peserta->id));
+        $response->assertSessionHas('success', 'Verifikasi SIPP berhasil disimpan.');
+
+        // Verify SippVerification
+        $this->assertDatabaseHas('sipp_verifications', [
+            'peserta_id' => $this->peserta->id,
+            'rehab_case_id' => null,
+            'tanggal_cek' => $now->toDateTimeString(),
+            'terdaftar_rehab' => 0,
+        ]);
+
+        // Verify RehabCase was NOT created
+        $this->assertDatabaseCount('rehab_cases', 0);
+        $this->assertDatabaseCount('rehab_case_members', 0);
+        $this->assertDatabaseCount('rehab_installments', 0);
     }
 
     public function test_cannot_overwrite_active_historical_case()

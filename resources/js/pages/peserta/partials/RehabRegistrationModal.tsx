@@ -135,7 +135,10 @@ export function RehabRegistrationModal({
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        if (step < 3) {
+        
+        const maxStep = data.sipp_terdaftar_rehab ? 3 : 2;
+        
+        if (step < maxStep) {
             setStep(step + 1);
             return;
         }
@@ -166,7 +169,7 @@ export function RehabRegistrationModal({
                         { label: 'SIPP Verification', s: 1 },
                         { label: 'Anggota', s: 2 },
                         { label: 'Cicilan', s: 3 },
-                    ].map((st) => (
+                    ].filter(st => data.sipp_terdaftar_rehab || st.s < 3).map((st) => (
                         <div key={st.s} className="flex flex-col items-center bg-white px-2">
                             <div
                                 className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${
@@ -389,7 +392,11 @@ export function RehabRegistrationModal({
                             <div />
                         )}
                         <Button type="submit" disabled={processing}>
-                            {step < 3 ? 'Selanjutnya' : 'Simpan & Generate Jadwal'}
+                            {!data.sipp_terdaftar_rehab && step === 2 
+                                ? 'Simpan Verifikasi SIPP' 
+                                : step < 3 
+                                    ? 'Selanjutnya' 
+                                    : 'Simpan & Generate Jadwal'}
                         </Button>
                     </DialogFooter>
                 </form>

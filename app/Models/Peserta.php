@@ -38,6 +38,11 @@ class Peserta extends Model
         return $this->hasMany(RehabCaseMember::class);
     }
 
+    public function sippVerifications(): HasMany
+    {
+        return $this->hasMany(SippVerification::class);
+    }
+
     public function batches(): HasMany
     {
         return $this->hasMany(PesertaBatch::class);

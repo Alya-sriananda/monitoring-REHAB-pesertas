@@ -25,15 +25,15 @@ class StoreRehabRegistrationRequest extends FormRequest
             'sipp_catatan' => ['nullable', 'string'],
 
             // Financial & Case
-            'tanggal_pendaftaran' => ['required', 'date'],
-            'jumlah_bulan_cicilan' => ['required', 'integer', 'min:1'],
+            'tanggal_pendaftaran' => ['required_if:sipp_terdaftar_rehab,true', 'nullable', 'date'],
+            'jumlah_bulan_cicilan' => ['required_if:sipp_terdaftar_rehab,true', 'nullable', 'integer', 'min:1'],
 
             // Members
-            'members' => ['required', 'array', 'min:1'],
+            'members' => ['required_if:sipp_terdaftar_rehab,true', 'nullable', 'array', 'min:1'],
             'members.*.peserta_id' => ['nullable', 'exists:pesertas,id'],
             'members.*.nama' => ['required_without:members.*.peserta_id', 'nullable', 'string', 'max:255'],
             'members.*.noka' => ['required_without:members.*.peserta_id', 'nullable', 'string', 'max:50'],
-            'members.*.tagihan_awal' => ['required', 'numeric', 'min:1'],
+            'members.*.tagihan_awal' => ['required_if:sipp_terdaftar_rehab,true', 'nullable', 'numeric', 'min:1'],
             'members.*.is_pendaftar' => ['boolean'],
             'members.*.jml_bulan_menunggak_awal' => ['nullable', 'integer', 'min:0'],
         ];

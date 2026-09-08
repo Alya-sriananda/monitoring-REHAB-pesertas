@@ -11,6 +11,7 @@ class SippVerification extends Model
     use HasFactory;
 
     protected $fillable = [
+        'peserta_id',
         'rehab_case_id',
         'batch_id',
         'user_id',
@@ -27,11 +28,16 @@ class SippVerification extends Model
     ];
 
     protected $casts = [
-        'tanggal_cek' => 'date',
+        'tanggal_cek' => 'datetime',
         'terdaftar_rehab' => 'boolean',
         'tanggal_daftar_rehab' => 'date',
         'tanggal_akhir_cicilan' => 'date',
     ];
+
+    public function peserta(): BelongsTo
+    {
+        return $this->belongsTo(Peserta::class);
+    }
 
     public function case(): BelongsTo
     {
