@@ -18,8 +18,8 @@ class PesertaController extends Controller
             $search = $request->input('search');
             $query->where(function ($q) use ($search) {
                 $q->where('noka', 'like', "%{$search}%")
-                  ->orWhere('nama', 'like', "%{$search}%")
-                  ->orWhere('no_hp', 'like', "%{$search}%");
+                    ->orWhere('nama', 'like', "%{$search}%")
+                    ->orWhere('no_hp', 'like', "%{$search}%");
             });
         }
 
@@ -63,11 +63,20 @@ class PesertaController extends Controller
             'daerah',
             'batches.batch',
             'rehabCaseMembers.case',
-            'rehabCaseMembers.installments'
+            'rehabCaseMembers.installments',
         ]);
+
+        $candidates = collect();
+        if (! empty($peserta->no_hp)) {
+            $candidates = Peserta::where('no_hp', $peserta->no_hp)
+                ->where('id', '!=', $peserta->id)
+                ->orderBy('nama')
+                ->get();
+        }
 
         return Inertia::render('peserta/show', [
             'peserta' => $peserta,
+            'candidates' => $candidates,
         ]);
     }
 }

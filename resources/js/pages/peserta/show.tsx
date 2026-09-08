@@ -1,8 +1,11 @@
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, usePage } from '@inertiajs/react';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { dashboard } from '@/routes';
 import pesertaRoute from '@/routes/peserta';
+import { useState } from 'react';
+import { RehabRegistrationModal } from './partials/RehabRegistrationModal';
+import { Button } from '@/components/ui/button';
 import {
     User,
     MapPin,
@@ -57,7 +60,9 @@ interface PesertaDetail {
     }[];
 }
 
-export default function PesertaShow({ peserta }: { peserta: PesertaDetail }) {
+export default function PesertaShow({ peserta, candidates = [] }: { peserta: PesertaDetail, candidates?: any[] }) {
+    const [isRehabModalOpen, setIsRehabModalOpen] = useState(false);
+
     const breadcrumbs: BreadcrumbItem[] = [
         { title: 'Dashboard', href: dashboard.url() },
         { title: 'Master Peserta', href: pesertaRoute.index.url() },
@@ -85,6 +90,8 @@ export default function PesertaShow({ peserta }: { peserta: PesertaDetail }) {
         });
     };
 
+    const activeCase = peserta.rehab_case_members?.find(m => m.case?.status_rehab === 'AKTIF');
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={`Detail Peserta - ${peserta.nama}`} />
@@ -99,11 +106,23 @@ export default function PesertaShow({ peserta }: { peserta: PesertaDetail }) {
                             <ArrowLeft className="h-4 w-4" />
                             Kembali ke Master Peserta
                         </Link>
-                        <h1 className="text-2xl font-semibold text-slate-900">
+                        <h1 className="text-2xl font-bold text-slate-900">
                             Detail Peserta
                         </h1>
                     </div>
+                    {!activeCase && (
+                        <Button onClick={() => setIsRehabModalOpen(true)}>
+                            Verifikasi & Daftarkan REHAB
+                        </Button>
+                    )}
                 </div>
+
+                <RehabRegistrationModal
+                    isOpen={isRehabModalOpen}
+                    onClose={() => setIsRehabModalOpen(false)}
+                    peserta={peserta}
+                    candidates={candidates}
+                />
 
                 <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
                     {/* Kolom Kiri: Profil Singkat */}

@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\BatchController;
+use App\Http\Controllers\PesertaController;
+use App\Http\Controllers\RehabRegistrationController;
 use Illuminate\Support\Facades\Route;
 
 Route::redirect('/', '/login')->name('home');
@@ -19,8 +21,9 @@ Route::middleware(['auth'])->group(function () {
 
     // Master Peserta & Detail
     Route::prefix('peserta')->name('peserta.')->group(function () {
-        Route::get('/', [\App\Http\Controllers\PesertaController::class, 'index'])->name('index');
-        Route::get('/{peserta}', [\App\Http\Controllers\PesertaController::class, 'show'])->name('show');
+        Route::get('/', [PesertaController::class, 'index'])->name('index');
+        Route::get('/{peserta}', [PesertaController::class, 'show'])->name('show');
+        Route::post('/{peserta}/rehab', [RehabRegistrationController::class, 'store'])->name('rehab.store');
     });
 });
 
