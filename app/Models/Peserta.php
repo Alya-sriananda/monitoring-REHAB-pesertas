@@ -133,7 +133,14 @@ class Peserta extends Model
                     SELECT 1 FROM sipp_verifications sv
                     WHERE sv.peserta_id = pesertas.id
                       AND sv.batch_id = {$batch->id}
-                ) THEN 'TERVERIFIKASI'
+                      AND sv.terdaftar_rehab = 1
+                ) THEN 'TERVERIFIKASI / REHAB'
+                WHEN EXISTS (
+                    SELECT 1 FROM sipp_verifications sv
+                    WHERE sv.peserta_id = pesertas.id
+                      AND sv.batch_id = {$batch->id}
+                      AND sv.terdaftar_rehab = 0
+                ) THEN 'TERVERIFIKASI / NON-REHAB'
                 ELSE 'BELUM DIVERIFIKASI'
             END
         ";

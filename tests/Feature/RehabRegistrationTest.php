@@ -34,6 +34,7 @@ class RehabRegistrationTest extends TestCase
             'role' => 'admin',
             'aktif' => true,
             'must_change_password' => false,
+            'npp' => '999888777',
         ]);
         $daerah = Daerah::factory()->create();
 
@@ -95,6 +96,7 @@ class RehabRegistrationTest extends TestCase
         $this->assertDatabaseHas('rehab_cases', [
             'peserta_id' => $this->peserta->id,
             'status_rehab' => 'AKTIF',
+            'npp_petugas' => '999888777',
         ]);
 
         $case = RehabCase::first();
@@ -105,6 +107,7 @@ class RehabRegistrationTest extends TestCase
             'rehab_case_id' => $case->id,
             'tanggal_cek' => $now->toDateTimeString(),
             'terdaftar_rehab' => 1,
+            'npp_petugas' => '999888777',
         ]);
 
         // Verify Members (only 2 out of 3 participants)
@@ -158,11 +161,13 @@ class RehabRegistrationTest extends TestCase
             'peserta_id' => $this->peserta->id,
             'rehab_case_id' => null,
             'terdaftar_rehab' => 0,
+            'npp_petugas' => '999888777',
         ]);
         $this->assertDatabaseHas('sipp_verifications', [
             'peserta_id' => $this->candidate1->id,
             'rehab_case_id' => null,
             'terdaftar_rehab' => 0,
+            'npp_petugas' => '999888777',
         ]);
         $newPeserta = Peserta::where('noka', '888899990000')->first();
         $this->assertNotNull($newPeserta);
@@ -170,6 +175,7 @@ class RehabRegistrationTest extends TestCase
             'peserta_id' => $newPeserta->id,
             'rehab_case_id' => null,
             'terdaftar_rehab' => 0,
+            'npp_petugas' => '999888777',
         ]);
 
         $this->assertDatabaseCount('sipp_verifications', 3);

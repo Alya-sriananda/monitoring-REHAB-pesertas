@@ -184,7 +184,8 @@ export default function PesertaIndex({
                                 >
                                     <option value="">Semua Status Proses</option>
                                     <option value="BELUM DIVERIFIKASI">BELUM DIVERIFIKASI</option>
-                                    <option value="TERVERIFIKASI">TERVERIFIKASI</option>
+                                    <option value="TERVERIFIKASI / REHAB">TERVERIFIKASI / REHAB</option>
+                                    <option value="TERVERIFIKASI / NON-REHAB">TERVERIFIKASI / NON-REHAB</option>
                                     <option value="PERLU FOLLOW-UP">PERLU FOLLOW-UP</option>
                                     <option value="SUDAH DIHUBUNGI">SUDAH DIHUBUNGI</option>
                                 </select>
@@ -297,7 +298,9 @@ export default function PesertaIndex({
                                                                     ? 'bg-orange-100 text-orange-800'
                                                                     : peserta.status_proses === 'SUDAH DIHUBUNGI'
                                                                     ? 'bg-blue-100 text-blue-800'
-                                                                    : 'bg-green-100 text-green-800'
+                                                                    : peserta.status_proses?.startsWith('TERVERIFIKASI')
+                                                                    ? 'bg-green-100 text-green-800'
+                                                                    : 'bg-slate-100 text-slate-800'
                                                             }`}
                                                         >
                                                             {peserta.status_proses}

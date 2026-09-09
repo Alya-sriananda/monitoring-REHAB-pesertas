@@ -46,7 +46,7 @@ class PesertaWorkQueueTest extends TestCase
         ]);
 
         $pesertaFromDB = Peserta::forWorkQueue($batch)->withStatusProses($batch)->first();
-        $this->assertEquals('TERVERIFIKASI', $pesertaFromDB->status_proses);
+        $this->assertEquals('TERVERIFIKASI / NON-REHAB', $pesertaFromDB->status_proses);
     }
 
     public function test_scenario_b_terdaftar_rehab()
@@ -119,7 +119,7 @@ class PesertaWorkQueueTest extends TestCase
         ]);
 
         $pesertaAgustus = Peserta::forWorkQueue($batchAgustus)->withStatusProses($batchAgustus)->first();
-        $this->assertEquals('TERVERIFIKASI', $pesertaAgustus->status_proses);
+        $this->assertEquals('TERVERIFIKASI / NON-REHAB', $pesertaAgustus->status_proses);
 
         // In September, they appear in Excel again
         PesertaBatch::create(['peserta_id' => $peserta->id, 'batch_id' => $batchSeptember->id, 'data_source' => 'excel']);

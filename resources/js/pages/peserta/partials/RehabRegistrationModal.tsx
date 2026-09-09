@@ -503,6 +503,12 @@ export function RehabRegistrationModal({
                                                             Rp {new Intl.NumberFormat('id-ID').format(member.custom_installments.reduce((sum: number, inst: any) => sum + (Number(inst.besaran_cicilan) || 0), 0))}
                                                         </span>
                                                     </div>
+                                                    {member.custom_installments.reduce((sum: number, inst: any) => sum + (Number(inst.besaran_cicilan) || 0), 0) !== parseFloat(member.tagihan_awal || 0) && (
+                                                        <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded text-xs text-red-600 font-medium flex gap-2">
+                                                            <span>⚠️</span>
+                                                            <span>Total cicilan manual tidak sama dengan tagihan awal (Selisih: Rp {new Intl.NumberFormat('id-ID').format(Math.abs(member.custom_installments.reduce((sum: number, inst: any) => sum + (Number(inst.besaran_cicilan) || 0), 0) - parseFloat(member.tagihan_awal || 0)))})</span>
+                                                        </div>
+                                                    )}
                                                     {data.members.filter((m: any) => m.temp_id !== member.temp_id && m.tagihan_awal === member.tagihan_awal).length > 0 && (
                                                         <div className="mt-4 text-right">
                                                             <Button 

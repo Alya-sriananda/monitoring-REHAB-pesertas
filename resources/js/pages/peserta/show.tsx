@@ -127,6 +127,14 @@ export default function PesertaShow({ peserta, candidates = [], latestBatch }: {
                             </span>
                         </div>
                     </div>
+                    <div>
+                        <div className="mb-1 text-xs font-medium text-slate-500">
+                            Petugas Pendaftar (NPP)
+                        </div>
+                        <div className="text-sm font-medium text-slate-900">
+                            {member.case?.npp_petugas || '-'}
+                        </div>
+                    </div>
                     <div className="text-right">
                         <div className="mb-1 text-xs font-medium text-slate-500">
                             Periode Program
