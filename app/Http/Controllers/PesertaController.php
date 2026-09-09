@@ -98,6 +98,7 @@ class PesertaController extends Controller
         $peserta->load([
             'daerah',
             'batches.batch',
+            'rehabCaseMembers.case.peserta',
             'rehabCaseMembers.case.members.peserta',
             'rehabCaseMembers.installments',
             'rehabCaseMembers.case.members.installments' => function ($query) {

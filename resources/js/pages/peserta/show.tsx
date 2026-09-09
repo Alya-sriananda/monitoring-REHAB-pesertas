@@ -41,6 +41,11 @@ interface PesertaDetail {
             status_rehab: string;
             tanggal_pendaftaran: string;
             tanggal_akhir_cicilan: string;
+            id_cicilan: string | null;
+            noka_pendaftar: string | null;
+            peserta?: {
+                nama: string;
+            };
         };
         installments?: {
             id: number;
@@ -119,12 +124,23 @@ export default function PesertaShow({ peserta, candidates = [], latestBatch }: {
         return (
             <div>
                 {/* Header Status REHAB */}
-                <div className={`mb-6 flex flex-wrap items-center justify-between gap-4 rounded-lg border border-slate-200 ${isHistorical ? 'bg-slate-100' : 'bg-slate-50'} p-4`}>
+                <div className={`mb-6 grid grid-cols-2 gap-4 sm:grid-cols-3 rounded-lg border border-slate-200 ${isHistorical ? 'bg-slate-100' : 'bg-slate-50'} p-4`}>
                     <div>
-                        <div className="mb-1 text-xs font-medium text-slate-500">
-                            Status Program
+                        <div className="mb-1 text-xs font-medium text-slate-500">Pendaftar REHAB (NOKA)</div>
+                        <div className="text-sm font-medium text-slate-900">
+                            {member.case?.peserta?.nama || '-'} <br/>
+                            <span className="text-slate-500 font-normal">{member.case?.noka_pendaftar || '-'}</span>
                         </div>
-                        <div className="flex items-center gap-2">
+                    </div>
+                    <div>
+                        <div className="mb-1 text-xs font-medium text-slate-500">ID Cicilan</div>
+                        <div className="text-sm font-medium text-slate-900">
+                            {member.case?.id_cicilan || '-'}
+                        </div>
+                    </div>
+                    <div>
+                        <div className="mb-1 text-xs font-medium text-slate-500">Status Program</div>
+                        <div className="flex items-center gap-2 mt-1">
                             <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${isHistorical ? 'bg-slate-200 text-slate-800' : 'bg-green-100 text-green-800'}`}>
                                 {member.case?.status_rehab || 'Aktif'}
                             </span>
@@ -132,18 +148,18 @@ export default function PesertaShow({ peserta, candidates = [], latestBatch }: {
                     </div>
                     <div>
                         <div className="mb-1 text-xs font-medium text-slate-500">
-                            Petugas Pendaftar (NPP)
+                            Petugas Pendaftar (User SIPP)
                         </div>
                         <div className="text-sm font-medium text-slate-900">
                             {peserta.batches?.[0]?.user_sipp || '-'}
                         </div>
                     </div>
-                    <div className="text-right">
+                    <div className="sm:col-span-2">
                         <div className="mb-1 text-xs font-medium text-slate-500">
                             Periode Program
                         </div>
-                        <div className="flex items-center justify-end gap-1 text-sm font-medium text-slate-900">
-                            <Calendar className="h-3 w-3 text-slate-400" />
+                        <div className="flex items-center gap-1 text-sm font-medium text-slate-900 mt-1">
+                            <Calendar className="h-4 w-4 text-slate-400" />
                             {formatDate(member.case?.tanggal_pendaftaran || null)} - {formatDate(member.case?.tanggal_akhir_cicilan || null)}
                         </div>
                     </div>

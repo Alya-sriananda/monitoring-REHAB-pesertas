@@ -12,10 +12,6 @@ class PaymentMonitoringService
     /**
      * Update the payment date for all installments of a REHAB case for a specific month.
      *
-     * @param int $rehabCaseId
-     * @param string $periodeBulan
-     * @param string|null $tanggalBayar
-     * @return void
      * @throws InvalidArgumentException
      */
     public function updateFamilyPaymentDate(int $rehabCaseId, string $periodeBulan, ?string $tanggalBayar): void
@@ -23,14 +19,14 @@ class PaymentMonitoringService
         DB::transaction(function () use ($rehabCaseId, $periodeBulan, $tanggalBayar) {
             $case = RehabCase::with('members')->lockForUpdate()->find($rehabCaseId);
 
-            if (!$case) {
-                throw new InvalidArgumentException("Rehab Case not found.");
+            if (! $case) {
+                throw new InvalidArgumentException('Rehab Case not found.');
             }
 
             $memberIds = $case->members->pluck('id');
 
             if ($memberIds->isEmpty()) {
-                throw new InvalidArgumentException("Rehab Case has no members.");
+                throw new InvalidArgumentException('Rehab Case has no members.');
             }
 
             $installments = RehabInstallment::whereIn('rehab_case_member_id', $memberIds)
@@ -39,7 +35,7 @@ class PaymentMonitoringService
                 ->get();
 
             if ($installments->isEmpty()) {
-                throw new InvalidArgumentException("No installments found for the given period.");
+                throw new InvalidArgumentException('No installments found for the given period.');
             }
 
             // Update all installments
@@ -52,10 +48,6 @@ class PaymentMonitoringService
 
     /**
      * Clear the payment date for all installments of a REHAB case for a specific month.
-     *
-     * @param int $rehabCaseId
-     * @param string $periodeBulan
-     * @return void
      */
     public function clearFamilyPaymentDate(int $rehabCaseId, string $periodeBulan): void
     {

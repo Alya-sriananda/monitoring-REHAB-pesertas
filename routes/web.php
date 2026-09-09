@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\BatchController;
+use App\Http\Controllers\PaymentMonitoringController;
 use App\Http\Controllers\PesertaController;
 use App\Http\Controllers\RehabRegistrationController;
 use Illuminate\Support\Facades\Route;
@@ -27,7 +28,7 @@ Route::middleware(['auth'])->group(function () {
     });
 
     // Payment Monitoring
-    Route::post('/rehab-cases/{rehab_case}/payments', [\App\Http\Controllers\PaymentMonitoringController::class, 'store'])->name('rehab-cases.payments.store');
+    Route::post('/rehab-cases/{rehab_case}/payments', [PaymentMonitoringController::class, 'store'])->name('rehab-cases.payments.store');
 });
 
 require __DIR__.'/settings.php';

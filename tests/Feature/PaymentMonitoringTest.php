@@ -15,8 +15,11 @@ class PaymentMonitoringTest extends TestCase
     use RefreshDatabase;
 
     protected $user;
+
     protected $rehabCase;
+
     protected $member1;
+
     protected $member2;
 
     protected function setUp(): void

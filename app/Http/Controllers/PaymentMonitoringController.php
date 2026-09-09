@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StorePaymentMonitoringRequest;
 use App\Models\RehabCase;
 use App\Services\PaymentMonitoringService;
-use Exception;
 use Illuminate\Http\RedirectResponse;
 
 class PaymentMonitoringController extends Controller

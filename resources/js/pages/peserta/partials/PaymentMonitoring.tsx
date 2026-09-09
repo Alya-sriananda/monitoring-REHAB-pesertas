@@ -260,11 +260,11 @@ export function PaymentMonitoring({ rehabCase }: { rehabCase: RehabCase }) {
                                     />
                                 </div>
                                 
-                                <div className="flex items-center gap-3 mt-2">
+                                <div className="flex flex-col items-start gap-3 mt-2">
                                     <Button 
                                         type="submit" 
                                         disabled={processing} 
-                                        className="whitespace-nowrap px-4 py-2 bg-[#22577A] hover:bg-[#22577A]/90"
+                                        className="whitespace-nowrap px-4 py-2 bg-[#22577A] hover:bg-[#22577A]/90 w-full justify-center"
                                     >
                                         {processing ? 'Menyimpan...' : 'Simpan Pembayaran'}
                                     </Button>
@@ -275,7 +275,7 @@ export function PaymentMonitoring({ rehabCase }: { rehabCase: RehabCase }) {
                                             variant="outline" 
                                             onClick={handleClearPayment}
                                             disabled={processing}
-                                            className="whitespace-nowrap px-4 py-2 border-red-200 text-red-600 hover:bg-red-50"
+                                            className="whitespace-nowrap px-4 py-2 border-red-200 text-red-600 hover:bg-red-50 w-full justify-center"
                                         >
                                             Batalkan
                                         </Button>
