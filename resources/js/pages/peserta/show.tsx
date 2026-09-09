@@ -132,9 +132,12 @@ export default function PesertaShow({ peserta, candidates = [], latestBatch }: {
                 {/* Financial Summary */}
                 <div className="mb-8 grid grid-cols-2 gap-4 sm:grid-cols-4">
                     <div className="rounded-lg border border-slate-200 bg-white p-4">
-                        <div className="mb-1 text-xs font-medium text-slate-500">Menunggak</div>
+                        <div className="mb-1 text-xs font-medium text-slate-500">Bulan Menunggak</div>
                         <div className="text-lg font-semibold text-slate-900">
                             {member.jml_bulan_menunggak_awal} <span className="text-sm font-normal text-slate-500">Bulan</span>
+                        </div>
+                        <div className="text-xs font-medium text-slate-500 mt-1">
+                            Lama Cicilan: {member.installments?.length || 0} Bulan
                         </div>
                     </div>
                     <div className="rounded-lg border border-slate-200 bg-white p-4">

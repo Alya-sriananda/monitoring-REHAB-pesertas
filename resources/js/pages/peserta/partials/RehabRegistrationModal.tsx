@@ -197,6 +197,19 @@ export function RehabRegistrationModal({
         );
     };
 
+    const applyCustomScheduleToOthers = (sourceMember: any) => {
+        setData(
+            'members',
+            data.members.map((m: any) => {
+                if (m.temp_id !== sourceMember.temp_id && m.tagihan_awal === sourceMember.tagihan_awal) {
+                    const copiedInstallments = sourceMember.custom_installments.map((inst: any) => ({ ...inst }));
+                    return { ...m, is_custom_schedule: true, custom_installments: copiedInstallments };
+                }
+                return m;
+            })
+        );
+    };
+
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         
@@ -490,6 +503,19 @@ export function RehabRegistrationModal({
                                                             Rp {new Intl.NumberFormat('id-ID').format(member.custom_installments.reduce((sum: number, inst: any) => sum + (Number(inst.besaran_cicilan) || 0), 0))}
                                                         </span>
                                                     </div>
+                                                    {data.members.filter((m: any) => m.temp_id !== member.temp_id && m.tagihan_awal === member.tagihan_awal).length > 0 && (
+                                                        <div className="mt-4 text-right">
+                                                            <Button 
+                                                                type="button" 
+                                                                variant="outline" 
+                                                                size="sm" 
+                                                                onClick={() => applyCustomScheduleToOthers(member)}
+                                                                className="text-xs text-blue-600 hover:text-blue-700 hover:bg-blue-50 border-blue-200"
+                                                            >
+                                                                Terapkan ke Peserta Lain (Tagihan Sama)
+                                                            </Button>
+                                                        </div>
+                                                    )}
                                                 </div>
                                             )}
                                         </div>
