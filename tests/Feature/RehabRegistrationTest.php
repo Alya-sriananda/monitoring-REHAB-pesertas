@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Batch;
 use App\Models\Daerah;
 use App\Models\Peserta;
 use App\Models\RehabCase;
@@ -22,6 +23,8 @@ class RehabRegistrationTest extends TestCase
     protected Peserta $candidate1;
 
     protected Peserta $candidate2;
+
+    protected Batch $batch;
 
     protected function setUp(): void
     {
@@ -48,6 +51,8 @@ class RehabRegistrationTest extends TestCase
             'daerah_id' => $daerah->id,
             'no_hp' => '08123456789',
         ]);
+
+        $this->batch = Batch::factory()->create();
     }
 
     public function test_unauthorized_user_cannot_create_case()
@@ -62,6 +67,7 @@ class RehabRegistrationTest extends TestCase
         Carbon::setTestNow($now);
 
         $payload = [
+            'batch_id' => $this->batch->id,
             'sipp_terdaftar_rehab' => true,
             'sipp_noka_pendaftar' => $this->peserta->noka,
             'tanggal_pendaftaran' => '2026-09-01',
@@ -125,8 +131,21 @@ class RehabRegistrationTest extends TestCase
         Carbon::setTestNow($now);
 
         $payload = [
+            'batch_id' => $this->batch->id,
             'sipp_terdaftar_rehab' => false,
-            // Financial fields should not be required
+            'members' => [
+                [
+                    'peserta_id' => $this->peserta->id,
+                ],
+                [
+                    'peserta_id' => $this->candidate1->id,
+                ],
+                [
+                    'peserta_id' => null, // Manual non-rehab check
+                    'nama' => 'Adik Manual',
+                    'noka' => '888899990000',
+                ],
+            ],
         ];
 
         $response = $this->actingAs($this->admin)->post(route('peserta.rehab.store', $this->peserta->id), $payload);
@@ -138,9 +157,22 @@ class RehabRegistrationTest extends TestCase
         $this->assertDatabaseHas('sipp_verifications', [
             'peserta_id' => $this->peserta->id,
             'rehab_case_id' => null,
-            'tanggal_cek' => $now->toDateTimeString(),
             'terdaftar_rehab' => 0,
         ]);
+        $this->assertDatabaseHas('sipp_verifications', [
+            'peserta_id' => $this->candidate1->id,
+            'rehab_case_id' => null,
+            'terdaftar_rehab' => 0,
+        ]);
+        $newPeserta = Peserta::where('noka', '888899990000')->first();
+        $this->assertNotNull($newPeserta);
+        $this->assertDatabaseHas('sipp_verifications', [
+            'peserta_id' => $newPeserta->id,
+            'rehab_case_id' => null,
+            'terdaftar_rehab' => 0,
+        ]);
+
+        $this->assertDatabaseCount('sipp_verifications', 3);
 
         // Verify RehabCase was NOT created
         $this->assertDatabaseCount('rehab_cases', 0);
@@ -161,6 +193,7 @@ class RehabRegistrationTest extends TestCase
         ]);
 
         $payload = [
+            'batch_id' => $this->batch->id,
             'sipp_terdaftar_rehab' => true,
             'tanggal_pendaftaran' => '2026-09-01',
             'jumlah_bulan_cicilan' => 4,
@@ -184,6 +217,7 @@ class RehabRegistrationTest extends TestCase
     public function test_validation_fails_on_missing_financial_fields()
     {
         $payload = [
+            'batch_id' => $this->batch->id,
             'sipp_terdaftar_rehab' => true,
             // missing tanggal_pendaftaran
             // missing jumlah_bulan_cicilan
@@ -209,6 +243,7 @@ class RehabRegistrationTest extends TestCase
     public function test_manual_participant_addition()
     {
         $payload = [
+            'batch_id' => $this->batch->id,
             'sipp_terdaftar_rehab' => true,
             'tanggal_pendaftaran' => '2026-09-01',
             'jumlah_bulan_cicilan' => 1,

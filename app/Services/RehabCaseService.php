@@ -52,10 +52,16 @@ class RehabCaseService
                 ]);
 
                 // Generate Installments for this member
+                $customInstallments = [];
+                if (! empty($memberData['is_custom_schedule']) && ! empty($memberData['custom_installments'])) {
+                    $customInstallments = $memberData['custom_installments'];
+                }
+
                 $this->installmentService->generateSchedule(
                     $member,
                     $rehabCase->tanggal_pendaftaran->format('Y-m-d'),
-                    $rehabCase->jumlah_bulan_cicilan
+                    $rehabCase->jumlah_bulan_cicilan,
+                    $customInstallments
                 );
             }
 

@@ -19,7 +19,7 @@ class StoreRehabRegistrationRequest extends FormRequest
             'sipp_terdaftar_rehab' => ['required', 'boolean'],
             'sipp_id_cicilan' => ['nullable', 'string', 'max:100'],
             'sipp_noka_pendaftar' => ['nullable', 'string', 'max:30'],
-            'sipp_npp_petugas' => ['nullable', 'string', 'max:50'],
+            // sipp_npp_petugas diisi via backend (auth()->user()->npp)
             'sipp_tanggal_daftar_rehab' => ['nullable', 'date'],
             'sipp_tanggal_akhir_cicilan' => ['nullable', 'date'],
             'sipp_jumlah_peserta_sipp' => ['nullable', 'integer', 'min:1'],
@@ -37,6 +37,10 @@ class StoreRehabRegistrationRequest extends FormRequest
             'members.*.tagihan_awal' => ['required_if:sipp_terdaftar_rehab,true', 'nullable', 'numeric', 'min:1'],
             'members.*.is_pendaftar' => ['boolean'],
             'members.*.jml_bulan_menunggak_awal' => ['nullable', 'integer', 'min:0'],
+            'members.*.is_custom_schedule' => ['nullable', 'boolean'],
+            'members.*.custom_installments' => ['nullable', 'array', 'required_if:members.*.is_custom_schedule,true'],
+            'members.*.custom_installments.*.periode_bulan' => ['required_with:members.*.custom_installments', 'date'],
+            'members.*.custom_installments.*.besaran_cicilan' => ['required_with:members.*.custom_installments', 'numeric', 'min:0'],
         ];
     }
 }

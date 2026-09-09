@@ -147,8 +147,9 @@ class BatchImportService
             ];
 
             $seenRows = [];
+            $seenNokas = [];
 
-            $reader->getRows()->each(function (array $rowProperties) use (&$stats, &$seenRows, $daerahCache, $batch) {
+            $reader->getRows()->each(function (array $rowProperties) use (&$stats, &$seenRows, &$seenNokas, $daerahCache, $batch) {
                 $stats['jumlah_row_asli']++;
 
                 $row = $this->normalizeRow($rowProperties);
@@ -182,6 +183,24 @@ class BatchImportService
                     return;
                 }
                 $seenRows[$rowHash] = true;
+
+                // Check conflict
+                if (isset($seenNokas[$noka])) {
+                    if ($this->isConflict($seenNokas[$noka], $row)) {
+                        $stats['jumlah_conflict']++;
+                        $stats['import_errors'][] = [
+                            'row' => $stats['jumlah_row_asli'],
+                            'noka' => $noka,
+                            'namaentitas' => $namaentitas,
+                            'kategori' => 'Conflict',
+                            'reason' => 'Konflik dengan data sebelumnya di file yang sama untuk Noka '.$noka,
+                        ];
+
+                        return; // skip conflict row
+                    }
+                }
+                $seenNokas[$noka] = $row;
+
                 $stats['jumlah_row_valid']++;
 
                 // Validate Daerah

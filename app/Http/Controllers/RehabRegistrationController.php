@@ -70,7 +70,7 @@ class RehabRegistrationController extends Controller
         }
 
         // 3. Wrap in a single transaction
-        DB::transaction(function () use ($request, $peserta, $processedMembers, $isTerdaftarRehab) {
+        DB::transaction(function () use ($request, $peserta, $processedMembers, $memberIds, $isTerdaftarRehab) {
             $rehabCaseId = null;
 
             if ($isTerdaftarRehab) {
@@ -79,7 +79,7 @@ class RehabRegistrationController extends Controller
                     'peserta_id' => $peserta->id, // Head of the manual case creation
                     'id_cicilan' => $request->input('sipp_id_cicilan'),
                     'noka_pendaftar' => $request->input('sipp_noka_pendaftar') ?: $peserta->noka,
-                    'npp_petugas' => $request->input('sipp_npp_petugas'),
+                    'npp_petugas' => auth()->user()->npp,
                     'tanggal_pendaftaran' => $request->input('tanggal_pendaftaran'),
                     'jumlah_bulan_cicilan' => $request->input('jumlah_bulan_cicilan'),
                     'tanggal_akhir_cicilan' => $request->input('sipp_tanggal_akhir_cicilan'),
@@ -90,22 +90,25 @@ class RehabRegistrationController extends Controller
                 $rehabCaseId = $rehabCase->id;
             }
 
-            // B. Create SIPP Verification Snapshot
-            SippVerification::create([
-                'peserta_id' => $peserta->id,
-                'batch_id' => $request->input('batch_id'),
-                'rehab_case_id' => $rehabCaseId,
-                'user_id' => auth()->id(),
-                'tanggal_cek' => now(),
-                'terdaftar_rehab' => $isTerdaftarRehab,
-                'id_cicilan' => $request->input('sipp_id_cicilan'),
-                'noka_pendaftar' => $request->input('sipp_noka_pendaftar'),
-                'npp_petugas' => $request->input('sipp_npp_petugas'),
-                'tanggal_daftar_rehab' => $request->input('sipp_tanggal_daftar_rehab'),
-                'tanggal_akhir_cicilan' => $request->input('sipp_tanggal_akhir_cicilan'),
-                'jumlah_peserta_sipp' => $request->input('sipp_jumlah_peserta_sipp'),
-                'catatan' => $request->input('sipp_catatan'),
-            ]);
+            // B. Create SIPP Verification Snapshots
+            $verificationPesertaIds = count($memberIds) > 0 ? $memberIds : [$peserta->id];
+            foreach ($verificationPesertaIds as $vid) {
+                SippVerification::create([
+                    'peserta_id' => $vid,
+                    'batch_id' => $request->input('batch_id'),
+                    'rehab_case_id' => $rehabCaseId,
+                    'user_id' => auth()->id(),
+                    'tanggal_cek' => now(),
+                    'terdaftar_rehab' => $isTerdaftarRehab,
+                    'id_cicilan' => $request->input('sipp_id_cicilan'),
+                    'noka_pendaftar' => $request->input('sipp_noka_pendaftar'),
+                    'npp_petugas' => auth()->user()->npp,
+                    'tanggal_daftar_rehab' => $request->input('sipp_tanggal_daftar_rehab'),
+                    'tanggal_akhir_cicilan' => $request->input('sipp_tanggal_akhir_cicilan'),
+                    'jumlah_peserta_sipp' => $request->input('sipp_jumlah_peserta_sipp'),
+                    'catatan' => $request->input('sipp_catatan'),
+                ]);
+            }
         });
 
         $message = $isTerdaftarRehab

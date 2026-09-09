@@ -90,7 +90,121 @@ export default function PesertaShow({ peserta, candidates = [], latestBatch }: {
         });
     };
 
-    const activeCase = peserta.rehab_case_members?.find(m => m.case?.status_rehab === 'AKTIF');
+    const activeCases = peserta.rehab_case_members?.filter(m => m.case?.status_rehab === 'AKTIF') || [];
+    const historicalCases = peserta.rehab_case_members?.filter(m => m.case?.status_rehab !== 'AKTIF') || [];
+    const activeCase = activeCases[0];
+
+    const renderCaseDetail = (member: any, isHistorical = false) => {
+        // Check if there are different installment amounts (Custom Schedule)
+        const isCustomSchedule = member.installments && new Set(member.installments.map((i: any) => parseFloat(i.besaran_cicilan))).size > 2;
+
+        return (
+            <div>
+                {/* Header Status REHAB */}
+                <div className={`mb-6 flex flex-wrap items-center justify-between gap-4 rounded-lg border border-slate-200 ${isHistorical ? 'bg-slate-100' : 'bg-slate-50'} p-4`}>
+                    <div>
+                        <div className="mb-1 text-xs font-medium text-slate-500">
+                            Status Program
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${isHistorical ? 'bg-slate-200 text-slate-800' : 'bg-green-100 text-green-800'}`}>
+                                {member.case?.status_rehab || 'Aktif'}
+                            </span>
+                        </div>
+                    </div>
+                    <div className="text-right">
+                        <div className="mb-1 text-xs font-medium text-slate-500">
+                            Periode Program
+                        </div>
+                        <div className="flex items-center justify-end gap-1 text-sm font-medium text-slate-900">
+                            <Calendar className="h-3 w-3 text-slate-400" />
+                            {formatDate(member.case?.tanggal_pendaftaran || null)} - {formatDate(member.case?.tanggal_akhir_cicilan || null)}
+                        </div>
+                    </div>
+                </div>
+
+                {/* Financial Summary */}
+                <div className="mb-8 grid grid-cols-2 gap-4 sm:grid-cols-4">
+                    <div className="rounded-lg border border-slate-200 bg-white p-4">
+                        <div className="mb-1 text-xs font-medium text-slate-500">Menunggak</div>
+                        <div className="text-lg font-semibold text-slate-900">
+                            {member.jml_bulan_menunggak_awal} <span className="text-sm font-normal text-slate-500">Bulan</span>
+                        </div>
+                    </div>
+                    <div className="rounded-lg border border-slate-200 bg-white p-4">
+                        <div className="mb-1 text-xs font-medium text-slate-500">Tagihan Awal</div>
+                        <div className="text-lg font-semibold text-slate-900">
+                            {formatCurrency(member.tagihan_awal)}
+                        </div>
+                    </div>
+                    <div className="rounded-lg border border-slate-200 bg-white p-4">
+                        <div className="mb-1 text-xs font-medium text-slate-500">
+                            Cicilan per Bulan
+                        </div>
+                        <div className="text-lg font-semibold text-[#22577A]">
+                            {isCustomSchedule ? (
+                                <span className="text-sm font-medium text-amber-600 bg-amber-50 px-2 py-1 rounded">Bervariasi (Khusus)</span>
+                            ) : (
+                                formatCurrency(member.cicilan_bulanan)
+                            )}
+                        </div>
+                    </div>
+                    <div className="rounded-lg border border-red-100 bg-red-50 p-4">
+                        <div className="mb-1 text-xs font-medium text-red-600">Sisa Tunggakan</div>
+                        <div className="text-lg font-bold text-red-700">
+                            {formatCurrency(member.sisa_tunggakan)}
+                        </div>
+                    </div>
+                </div>
+
+                {/* Riwayat Cicilan */}
+                <h3 className="mb-3 border-b border-slate-200 pb-2 text-sm font-semibold text-slate-800">
+                    Jadwal & Riwayat Pembayaran
+                </h3>
+                {member.installments && member.installments.length > 0 ? (
+                    <div className="overflow-hidden rounded-lg border border-slate-200">
+                        <table className="w-full text-left text-sm">
+                            <thead className="bg-slate-50 text-slate-600">
+                                <tr>
+                                    <th className="px-4 py-3 font-medium">Bulan/Tahun</th>
+                                    <th className="px-4 py-3 text-right font-medium">Tagihan</th>
+                                    <th className="px-4 py-3 font-medium">Tanggal Bayar</th>
+                                    <th className="px-4 py-3 font-medium">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-200 bg-white">
+                                {member.installments.map((inst: any) => (
+                                    <tr key={inst.id}>
+                                        <td className="px-4 py-3 font-medium text-slate-900">
+                                            Cicilan ke-{inst.nomor_cicilan}
+                                            <div className="text-xs text-slate-500 font-normal">
+                                                {new Date(inst.periode_bulan).toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })}
+                                            </div>
+                                        </td>
+                                        <td className="px-4 py-3 text-right text-slate-900">
+                                            {formatCurrency(inst.besaran_cicilan)}
+                                        </td>
+                                        <td className="px-4 py-3 whitespace-nowrap text-slate-600">
+                                            {formatDate(inst.tanggal_bayar)}
+                                        </td>
+                                        <td className="px-4 py-3">
+                                            <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${inst.tanggal_bayar !== null ? 'bg-green-100 text-green-800' : 'bg-amber-100 text-amber-800'}`}>
+                                                {inst.tanggal_bayar !== null ? 'Lunas' : 'Belum Lunas'}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                ) : (
+                    <div className="rounded-lg border border-dashed border-slate-200 p-8 text-center">
+                        <p className="text-sm text-slate-500">Tidak ada jadwal cicilan yang ditemukan.</p>
+                    </div>
+                )}
+            </div>
+        );
+    };
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -268,8 +382,7 @@ export default function PesertaShow({ peserta, candidates = [], latestBatch }: {
                             </div>
 
                             <div className="p-6">
-                                {!peserta.rehab_case_members ||
-                                peserta.rehab_case_members.length === 0 ? (
+                                {activeCases.length === 0 && historicalCases.length === 0 ? (
                                     <div className="flex flex-col items-center justify-center py-12 text-center">
                                         <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-slate-100">
                                             <CreditCard className="h-8 w-8 text-slate-300" />
@@ -285,182 +398,22 @@ export default function PesertaShow({ peserta, candidates = [], latestBatch }: {
                                     </div>
                                 ) : (
                                     <div className="space-y-8">
-                                        {peserta.rehab_case_members.map(
-                                            (member, idx) => (
-                                                <div
-                                                    key={member.id}
-                                                    className={
-                                                        idx > 0
-                                                            ? 'border-t border-slate-200 pt-8'
-                                                            : ''
-                                                    }
-                                                >
-                                                    {/* Header Status REHAB */}
-                                                    <div className="mb-6 flex flex-wrap items-center justify-between gap-4 rounded-lg border border-slate-200 bg-slate-50 p-4">
-                                                        <div>
-                                                            <div className="mb-1 text-xs font-medium text-slate-500">
-                                                                Status Program
-                                                            </div>
-                                                            <div className="flex items-center gap-2">
-                                                                <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">
-                                                                    {member.case
-                                                                        ?.status_rehab ||
-                                                                        'Aktif'}
-                                                                </span>
-                                                            </div>
-                                                        </div>
-                                                        <div className="text-right">
-                                                            <div className="mb-1 text-xs font-medium text-slate-500">
-                                                                Periode Program
-                                                            </div>
-                                                            <div className="flex items-center justify-end gap-1 text-sm font-medium text-slate-900">
-                                                                <Calendar className="h-3 w-3 text-slate-400" />
-                                                                {formatDate(
-                                                                    member.case
-                                                                        ?.tanggal_pendaftaran ||
-                                                                        null,
-                                                                )}{' '}
-                                                                -{' '}
-                                                                {formatDate(
-                                                                    member.case
-                                                                        ?.tanggal_akhir_cicilan ||
-                                                                        null,
-                                                                )}
-                                                            </div>
-                                                        </div>
+                                        {activeCases.map((member, idx) => (
+                                            <div key={member.id} className={idx > 0 ? 'border-t border-slate-200 pt-8' : ''}>
+                                                <h3 className="text-lg font-bold text-[#22577A] mb-4">Program REHAB Aktif</h3>
+                                                {renderCaseDetail(member)}
+                                            </div>
+                                        ))}
+                                        
+                                        {historicalCases.length > 0 && (
+                                            <div className="mt-8 pt-8 border-t border-slate-200">
+                                                <h3 className="text-lg font-bold text-slate-700 mb-4">Riwayat Historis REHAB</h3>
+                                                {historicalCases.map((member, idx) => (
+                                                    <div key={member.id} className={idx > 0 ? 'mt-8' : ''}>
+                                                        {renderCaseDetail(member, true)}
                                                     </div>
-
-                                                    {/* Financial Summary */}
-                                                    <div className="mb-8 grid grid-cols-2 gap-4 sm:grid-cols-4">
-                                                        <div className="rounded-lg border border-slate-200 bg-white p-4">
-                                                            <div className="mb-1 text-xs font-medium text-slate-500">
-                                                                Menunggak
-                                                            </div>
-                                                            <div className="text-lg font-semibold text-slate-900">
-                                                                {
-                                                                    member.jml_bulan_menunggak_awal
-                                                                }{' '}
-                                                                <span className="text-sm font-normal text-slate-500">
-                                                                    Bulan
-                                                                </span>
-                                                            </div>
-                                                        </div>
-                                                        <div className="rounded-lg border border-slate-200 bg-white p-4">
-                                                            <div className="mb-1 text-xs font-medium text-slate-500">
-                                                                Tagihan Awal
-                                                            </div>
-                                                            <div className="text-lg font-semibold text-slate-900">
-                                                                {formatCurrency(
-                                                                    member.tagihan_awal,
-                                                                )}
-                                                            </div>
-                                                        </div>
-                                                        <div className="rounded-lg border border-slate-200 bg-white p-4">
-                                                            <div className="mb-1 text-xs font-medium text-slate-500">
-                                                                Cicilan per
-                                                                Bulan
-                                                            </div>
-                                                            <div className="text-lg font-semibold text-[#22577A]">
-                                                                {formatCurrency(
-                                                                    member.cicilan_bulanan,
-                                                                )}
-                                                            </div>
-                                                        </div>
-                                                        <div className="rounded-lg border border-red-100 bg-red-50 p-4">
-                                                            <div className="mb-1 text-xs font-medium text-red-600">
-                                                                Sisa Tunggakan
-                                                            </div>
-                                                            <div className="text-lg font-bold text-red-700">
-                                                                {formatCurrency(
-                                                                    member.sisa_tunggakan,
-                                                                )}
-                                                            </div>
-                                                        </div>
-                                                    </div>
-
-                                                    {/* Riwayat Cicilan */}
-                                                    <h3 className="mb-3 border-b border-slate-200 pb-2 text-sm font-semibold text-slate-800">
-                                                        Jadwal & Riwayat
-                                                        Pembayaran
-                                                    </h3>
-                                                    {member.installments &&
-                                                    member.installments.length >
-                                                        0 ? (
-                                                        <div className="overflow-hidden rounded-lg border border-slate-200">
-                                                            <table className="w-full text-left text-sm">
-                                                                <thead className="bg-slate-50 text-slate-600">
-                                                                    <tr>
-                                                                        <th className="px-4 py-3 font-medium">
-                                                                            Bulan/Tahun
-                                                                        </th>
-                                                                        <th className="px-4 py-3 text-right font-medium">
-                                                                            Tagihan
-                                                                        </th>
-                                                                        <th className="px-4 py-3 font-medium">
-                                                                            Tanggal
-                                                                            Bayar
-                                                                        </th>
-                                                                        <th className="px-4 py-3 font-medium">
-                                                                            Status
-                                                                        </th>
-                                                                    </tr>
-                                                                </thead>
-                                                                <tbody className="divide-y divide-slate-200 bg-white">
-                                                                    {member.installments.map(
-                                                                        (
-                                                                            inst,
-                                                                        ) => (
-                                                                            <tr
-                                                                                key={
-                                                                                    inst.id
-                                                                                }
-                                                                            >
-                                                                                <td className="px-4 py-3 font-medium text-slate-900">
-                                                                                    Cicilan ke-{inst.nomor_cicilan}
-                                                                                    <div className="text-xs text-slate-500 font-normal">
-                                                                                        {new Date(inst.periode_bulan).toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })}
-                                                                                    </div>
-                                                                                </td>
-                                                                                <td className="px-4 py-3 text-right text-slate-900">
-                                                                                    {formatCurrency(
-                                                                                        inst.besaran_cicilan,
-                                                                                    )}
-                                                                                </td>
-                                                                                <td className="px-4 py-3 whitespace-nowrap text-slate-600">
-                                                                                    {formatDate(
-                                                                                        inst.tanggal_bayar,
-                                                                                    )}
-                                                                                </td>
-                                                                                <td className="px-4 py-3">
-                                                                                    <span
-                                                                                        className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
-                                                                                            inst.tanggal_bayar !== null
-                                                                                                ? 'bg-green-100 text-green-800'
-                                                                                                : 'bg-amber-100 text-amber-800'
-                                                                                        }`}
-                                                                                    >
-                                                                                        {inst.tanggal_bayar !== null
-                                                                                            ? 'Lunas'
-                                                                                            : 'Belum Lunas'}
-                                                                                    </span>
-                                                                                </td>
-                                                                            </tr>
-                                                                        ),
-                                                                    )}
-                                                                </tbody>
-                                                            </table>
-                                                        </div>
-                                                    ) : (
-                                                        <div className="rounded-lg border border-dashed border-slate-200 p-8 text-center">
-                                                            <p className="text-sm text-slate-500">
-                                                                Tidak ada jadwal
-                                                                cicilan yang
-                                                                ditemukan.
-                                                            </p>
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            ),
+                                                ))}
+                                            </div>
                                         )}
                                     </div>
                                 )}

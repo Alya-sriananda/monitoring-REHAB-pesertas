@@ -35,7 +35,6 @@ export function RehabRegistrationModal({
         sipp_terdaftar_rehab: false,
         sipp_id_cicilan: latestBatch?.idcicilan || '',
         sipp_noka_pendaftar: peserta.noka,
-        sipp_npp_petugas: '',
         sipp_tanggal_daftar_rehab: '',
         sipp_tanggal_akhir_cicilan: '',
         sipp_jumlah_peserta_sipp: '',
@@ -54,6 +53,8 @@ export function RehabRegistrationModal({
                 noka: peserta.noka,
                 tagihan_awal: '',
                 is_pendaftar: true,
+                is_custom_schedule: false,
+                custom_installments: [],
             },
         ],
     });
@@ -76,6 +77,8 @@ export function RehabRegistrationModal({
                         noka: peserta.noka,
                         tagihan_awal: '',
                         is_pendaftar: true,
+                        is_custom_schedule: false,
+                        custom_installments: [],
                     },
                 ],
             }));
@@ -95,6 +98,8 @@ export function RehabRegistrationModal({
                     noka: candidate.noka,
                     tagihan_awal: '',
                     is_pendaftar: false,
+                    is_custom_schedule: false,
+                    custom_installments: [],
                 },
             ]);
         } else {
@@ -115,6 +120,8 @@ export function RehabRegistrationModal({
                 noka: '',
                 tagihan_awal: '',
                 is_pendaftar: false,
+                is_custom_schedule: false,
+                custom_installments: [],
             },
         ]);
     };
@@ -126,12 +133,67 @@ export function RehabRegistrationModal({
         );
     };
 
-    const updateMemberField = (tempId: string, field: string, value: string) => {
+    const updateMemberField = (tempId: string, field: string, value: any) => {
         setData(
             'members',
             data.members.map((m: any) =>
                 m.temp_id === tempId ? { ...m, [field]: value } : m
             )
+        );
+    };
+
+    const generateInitialCustomSchedule = (startDate: string, months: number, tagihanAwal: number) => {
+        const schedule = [];
+        const baseAmount = Math.floor(tagihanAwal / months);
+        let total = 0;
+        
+        for (let i = 0; i < months; i++) {
+            const d = new Date(startDate);
+            d.setMonth(d.getMonth() + i);
+            const periode = d.toISOString().split('T')[0];
+            const isLast = i === months - 1;
+            const amount = isLast ? (tagihanAwal - total) : baseAmount;
+            total += amount;
+            
+            schedule.push({ periode_bulan: periode, besaran_cicilan: amount });
+        }
+        return schedule;
+    };
+
+    const toggleCustomSchedule = (member: any, checked: boolean) => {
+        if (checked && data.tanggal_pendaftaran && data.jumlah_bulan_cicilan && member.tagihan_awal) {
+            const initialSchedule = generateInitialCustomSchedule(
+                data.tanggal_pendaftaran,
+                parseInt(data.jumlah_bulan_cicilan),
+                parseFloat(member.tagihan_awal)
+            );
+            setData(
+                'members',
+                data.members.map((m: any) =>
+                    m.temp_id === member.temp_id ? { ...m, is_custom_schedule: true, custom_installments: initialSchedule } : m
+                )
+            );
+        } else {
+            setData(
+                'members',
+                data.members.map((m: any) =>
+                    m.temp_id === member.temp_id ? { ...m, is_custom_schedule: false, custom_installments: [] } : m
+                )
+            );
+        }
+    };
+
+    const updateCustomInstallment = (memberTempId: string, index: number, value: string) => {
+        setData(
+            'members',
+            data.members.map((m: any) => {
+                if (m.temp_id === memberTempId) {
+                    const newInstallments = [...m.custom_installments];
+                    newInstallments[index].besaran_cicilan = value ? parseFloat(value) : 0;
+                    return { ...m, custom_installments: newInstallments };
+                }
+                return m;
+            })
         );
     };
 
@@ -143,6 +205,19 @@ export function RehabRegistrationModal({
         if (step < maxStep) {
             setStep(step + 1);
             return;
+        }
+
+        // Validate custom schedules
+        if (data.sipp_terdaftar_rehab) {
+            for (const member of data.members) {
+                if (member.is_custom_schedule) {
+                    const totalCustom = member.custom_installments.reduce((sum: number, inst: any) => sum + (Number(inst.besaran_cicilan) || 0), 0);
+                    if (totalCustom !== parseFloat(member.tagihan_awal)) {
+                        alert(`Total jadwal cicilan khusus untuk ${member.nama} (Rp ${totalCustom}) tidak sama dengan Tagihan Awal (Rp ${member.tagihan_awal}). Harap perbaiki sebelum menyimpan.`);
+                        return;
+                    }
+                }
+            }
         }
 
         post(`/peserta/${peserta.id}/rehab`, {
@@ -353,31 +428,70 @@ export function RehabRegistrationModal({
                                 <Label>Tagihan Awal per Anggota *</Label>
                                 {data.members.map((member: any, index: number) => {
                                     return (
-                                        <div key={member.temp_id} className="grid grid-cols-2 gap-4 items-center mb-2">
-                                            <div className="text-sm font-medium flex items-center gap-2">
-                                                {member.nama} 
-                                                {!member.peserta_id && <span className="text-[10px] bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full">Manual</span>}
+                                        <div key={member.temp_id} className="border border-slate-200 rounded-lg p-4 mb-4 bg-slate-50">
+                                            <div className="grid grid-cols-2 gap-4 items-center mb-4">
+                                                <div className="text-sm font-medium flex items-center gap-2">
+                                                    {member.nama} 
+                                                    {!member.peserta_id && <span className="text-[10px] bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full">Manual</span>}
+                                                </div>
+                                                <div>
+                                                    <Input
+                                                        type="number"
+                                                        min="0"
+                                                        placeholder="Rp"
+                                                        value={member.tagihan_awal}
+                                                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateMemberField(member.temp_id, 'tagihan_awal', e.target.value)}
+                                                        required
+                                                    />
+                                                    {errors[`members.${index}.tagihan_awal`] && (
+                                                        <p className="text-sm text-red-500 mt-1">
+                                                            {errors[`members.${index}.tagihan_awal`]}
+                                                        </p>
+                                                    )}
+                                                </div>
                                             </div>
-                                            <div>
-                                                <Input
-                                                    type="number"
-                                                    min="0"
-                                                    placeholder="Rp"
-                                                    value={member.tagihan_awal}
-                                                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateMemberField(member.temp_id, 'tagihan_awal', e.target.value)}
-                                                    required
+
+                                            <div className="flex items-center space-x-2 mt-4 pt-4 border-t border-slate-200">
+                                                <Checkbox
+                                                    id={`custom-${member.temp_id}`}
+                                                    checked={member.is_custom_schedule}
+                                                    onCheckedChange={(c) => toggleCustomSchedule(member, !!c)}
+                                                    disabled={!data.tanggal_pendaftaran || !data.jumlah_bulan_cicilan || !member.tagihan_awal}
                                                 />
-                                                {errors[`members.${index}.tagihan_awal`] && (
-                                                    <p className="text-sm text-red-500 mt-1">
-                                                        {errors[`members.${index}.tagihan_awal`]}
-                                                    </p>
-                                                )}
-                                                {errors[`members.${index}.nama`] && (
-                                                    <p className="text-sm text-red-500 mt-1">
-                                                        {errors[`members.${index}.nama`]}
-                                                    </p>
-                                                )}
+                                                <Label htmlFor={`custom-${member.temp_id}`} className="font-medium cursor-pointer text-sm text-slate-700">
+                                                    Gunakan Jadwal Khusus SIPP (Tidak Dibagi Rata)
+                                                </Label>
                                             </div>
+                                            {!data.tanggal_pendaftaran && !member.tagihan_awal && (
+                                                <p className="text-xs text-slate-500 mt-1 ml-6">Isi Tanggal Daftar, Jumlah Bulan, dan Tagihan Awal terlebih dahulu.</p>
+                                            )}
+
+                                            {member.is_custom_schedule && member.custom_installments.length > 0 && (
+                                                <div className="mt-4 ml-6 p-4 bg-white border border-slate-200 rounded-lg">
+                                                    <div className="text-sm font-medium mb-3 text-slate-700">Penyesuaian Jadwal Manual</div>
+                                                    <div className="grid grid-cols-2 gap-3">
+                                                        {member.custom_installments.map((inst: any, i: number) => (
+                                                            <div key={i} className="flex items-center gap-2">
+                                                                <div className="w-8 h-8 flex-shrink-0 bg-slate-100 rounded flex items-center justify-center text-xs font-medium text-slate-500">
+                                                                    {i + 1}
+                                                                </div>
+                                                                <Input
+                                                                    type="number"
+                                                                    className="h-8 text-sm"
+                                                                    value={inst.besaran_cicilan}
+                                                                    onChange={(e) => updateCustomInstallment(member.temp_id, i, e.target.value)}
+                                                                />
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                    <div className="mt-4 pt-3 border-t flex justify-between items-center text-sm">
+                                                        <span className="font-medium text-slate-600">Total Nominal Manual:</span>
+                                                        <span className={`font-bold ${member.custom_installments.reduce((sum: number, inst: any) => sum + (Number(inst.besaran_cicilan) || 0), 0) === parseFloat(member.tagihan_awal) ? 'text-green-600' : 'text-red-600'}`}>
+                                                            Rp {new Intl.NumberFormat('id-ID').format(member.custom_installments.reduce((sum: number, inst: any) => sum + (Number(inst.besaran_cicilan) || 0), 0))}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            )}
                                         </div>
                                     );
                                 })}
@@ -394,11 +508,13 @@ export function RehabRegistrationModal({
                             <div />
                         )}
                         <Button type="submit" disabled={processing}>
-                            {!data.sipp_terdaftar_rehab && step === 2 
-                                ? 'Simpan Verifikasi SIPP' 
-                                : step < 3 
-                                    ? 'Selanjutnya' 
-                                    : 'Simpan & Generate Jadwal'}
+                            {processing ? 'Menyimpan...' : (
+                                !data.sipp_terdaftar_rehab && step === 2 
+                                    ? 'Simpan Verifikasi SIPP' 
+                                    : step < 3 
+                                        ? 'Selanjutnya' 
+                                        : 'Simpan & Generate Jadwal'
+                            )}
                         </Button>
                     </DialogFooter>
                 </form>
