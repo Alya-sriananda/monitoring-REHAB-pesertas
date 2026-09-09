@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\BatchController;
+use App\Http\Controllers\KomunikasiController;
 use App\Http\Controllers\PaymentMonitoringController;
 use App\Http\Controllers\PesertaController;
 use App\Http\Controllers\RehabRegistrationController;
@@ -29,6 +30,10 @@ Route::middleware(['auth'])->group(function () {
 
     // Payment Monitoring
     Route::post('/rehab-cases/{rehab_case}/payments', [PaymentMonitoringController::class, 'store'])->name('rehab-cases.payments.store');
+
+    // Komunikasi
+    Route::post('/komunikasi/preview', [KomunikasiController::class, 'generatePreview'])->name('komunikasi.preview');
+    Route::post('/rehab-cases/{rehab_case}/komunikasi', [KomunikasiController::class, 'store'])->name('rehab-cases.komunikasi.store');
 });
 
 require __DIR__.'/settings.php';

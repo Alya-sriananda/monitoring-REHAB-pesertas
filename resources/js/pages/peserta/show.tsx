@@ -73,7 +73,7 @@ interface PesertaDetail {
     }[];
 }
 
-export default function PesertaShow({ peserta, candidates = [], latestBatch }: { peserta: PesertaDetail, candidates?: any[], latestBatch?: any }) {
+export default function PesertaShow({ peserta, candidates = [], latestBatch, templates = [] }: { peserta: PesertaDetail, candidates?: any[], latestBatch?: any, templates?: any[] }) {
     const [isRehabModalOpen, setIsRehabModalOpen] = useState(false);
 
     const breadcrumbs: BreadcrumbItem[] = [
@@ -423,7 +423,7 @@ export default function PesertaShow({ peserta, candidates = [], latestBatch }: {
                                             <div key={member.id} className={idx > 0 ? 'border-t border-slate-200 pt-8' : ''}>
                                                 <h3 className="text-lg font-bold text-[#22577A] mb-4">Program REHAB Aktif</h3>
                                                 {renderCaseDetail(member)}
-                                                {member.case && <PaymentMonitoring rehabCase={member.case as any} />}
+                                                {member.case && <PaymentMonitoring rehabCase={member.case as any} templates={templates} />}
                                             </div>
                                         ))}
                                         

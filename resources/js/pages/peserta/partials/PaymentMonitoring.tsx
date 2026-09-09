@@ -4,6 +4,8 @@ import { Button } from '@/components/ui/button';
 import { CreditCard, Calendar, CheckCircle2, XCircle, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 
+import { KomunikasiPanel } from './KomunikasiPanel';
+
 interface Installment {
     id: number;
     nomor_cicilan: number;
@@ -15,7 +17,10 @@ interface Installment {
 interface Member {
     id: number;
     peserta: {
+        id: number;
         nama: string;
+        no_hp: string;
+        noka: string;
     };
     installments: Installment[];
 }
@@ -26,7 +31,7 @@ interface RehabCase {
     members: Member[];
 }
 
-export function PaymentMonitoring({ rehabCase }: { rehabCase: RehabCase }) {
+export function PaymentMonitoring({ rehabCase, templates }: { rehabCase: RehabCase, templates?: any[] }) {
     const [selectedPeriod, setSelectedPeriod] = useState<string>('');
 
     // Extract unique periods from all installments across all members
@@ -327,6 +332,18 @@ export function PaymentMonitoring({ rehabCase }: { rehabCase: RehabCase }) {
                     </div>
                 </div>
             </div>
+            
+            {templates && rehabCase.members && rehabCase.members.length > 0 && periodData && (
+                <div className="mt-4 border-t border-slate-200">
+                    <KomunikasiPanel 
+                        rehabCase={rehabCase}
+                        peserta={rehabCase.members[0].peserta}
+                        selectedPeriod={selectedPeriod}
+                        totalAmount={periodData.totalAmount}
+                        templates={templates}
+                    />
+                </div>
+            )}
         </div>
     );
 }

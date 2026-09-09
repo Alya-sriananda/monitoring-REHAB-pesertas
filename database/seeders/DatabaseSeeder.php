@@ -18,6 +18,7 @@ class DatabaseSeeder extends Seeder
     {
         $this->call([
             MasterDaerahSeeder::class,
+            TemplatePesanSeeder::class,
         ]);
         $admin = User::factory()->create([
             'name' => 'Admin Solok',

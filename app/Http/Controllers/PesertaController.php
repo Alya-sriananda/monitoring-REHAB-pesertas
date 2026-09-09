@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Batch;
 use App\Models\Daerah;
 use App\Models\Peserta;
+use App\Models\TemplatePesan;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -118,11 +119,13 @@ class PesertaController extends Controller
         }
 
         $latestBatch = $peserta->batches->sortByDesc('created_at')->first();
+        $templates = TemplatePesan::where('aktif', true)->get();
 
         return Inertia::render('peserta/show', [
             'peserta' => $peserta,
             'candidates' => $candidates,
             'latestBatch' => $latestBatch,
+            'templates' => $templates,
         ]);
     }
 }
