@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\Batch;
+use App\Models\Peserta;
 use App\Models\RehabCase;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -12,7 +13,7 @@ class SippVerificationFactory extends Factory
     public function definition(): array
     {
         return [
-            'peserta_id' => \App\Models\Peserta::factory(),
+            'peserta_id' => Peserta::factory(),
             'rehab_case_id' => RehabCase::factory(),
             'batch_id' => Batch::factory(),
             'user_id' => User::factory(),

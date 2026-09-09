@@ -60,7 +60,7 @@ interface PesertaDetail {
     }[];
 }
 
-export default function PesertaShow({ peserta, candidates = [] }: { peserta: PesertaDetail, candidates?: any[] }) {
+export default function PesertaShow({ peserta, candidates = [], latestBatch }: { peserta: PesertaDetail, candidates?: any[], latestBatch?: any }) {
     const [isRehabModalOpen, setIsRehabModalOpen] = useState(false);
 
     const breadcrumbs: BreadcrumbItem[] = [
@@ -122,6 +122,7 @@ export default function PesertaShow({ peserta, candidates = [] }: { peserta: Pes
                     onClose={() => setIsRehabModalOpen(false)}
                     peserta={peserta}
                     candidates={candidates}
+                    latestBatch={latestBatch}
                 />
 
                 <div className="grid grid-cols-1 gap-6 md:grid-cols-3">

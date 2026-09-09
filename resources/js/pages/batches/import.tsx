@@ -56,6 +56,22 @@ export default function BatchImport() {
         }
     };
 
+    const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+        e.preventDefault();
+        e.stopPropagation();
+    };
+
+    const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const selected = e.dataTransfer.files?.[0];
+        if (selected) {
+            setFile(selected);
+            setStatus('idle');
+            setErrorMessage('');
+        }
+    };
+
     const handlePreview = async () => {
         if (!file || !tanggalData) return;
 
@@ -173,7 +189,7 @@ export default function BatchImport() {
                                     <span className="text-red-500">*</span>
                                 </label>
 
-                                {status === 'idle' || status === 'error' ? (
+                                {!file || status === 'error' ? (
                                     <div
                                         className={`mt-1 flex justify-center rounded-lg border-2 border-dashed px-6 py-10 ${
                                             status === 'error'
@@ -183,6 +199,8 @@ export default function BatchImport() {
                                         onClick={() =>
                                             fileInputRef.current?.click()
                                         }
+                                        onDragOver={handleDragOver}
+                                        onDrop={handleDrop}
                                     >
                                         <div className="text-center">
                                             <UploadCloud

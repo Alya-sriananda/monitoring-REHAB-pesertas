@@ -93,6 +93,7 @@ class RehabRegistrationController extends Controller
             // B. Create SIPP Verification Snapshot
             SippVerification::create([
                 'peserta_id' => $peserta->id,
+                'batch_id' => $request->input('batch_id'),
                 'rehab_case_id' => $rehabCaseId,
                 'user_id' => auth()->id(),
                 'tanggal_cek' => now(),

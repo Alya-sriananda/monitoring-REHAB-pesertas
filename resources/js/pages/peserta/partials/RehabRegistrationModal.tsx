@@ -31,6 +31,7 @@ export function RehabRegistrationModal({
 }: RehabRegistrationModalProps) {
     const { data, setData, post, processing, errors, reset, clearErrors } = useForm({
         // SIPP Data
+        batch_id: latestBatch?.batch_id || '',
         sipp_terdaftar_rehab: false,
         sipp_id_cicilan: latestBatch?.idcicilan || '',
         sipp_noka_pendaftar: peserta.noka,
@@ -64,6 +65,7 @@ export function RehabRegistrationModal({
         if (isOpen) {
             setData((prev: any) => ({
                 ...prev,
+                batch_id: latestBatch?.batch_id || '',
                 sipp_id_cicilan: latestBatch?.idcicilan || '',
                 jumlah_bulan_cicilan: latestBatch?.jmlbulancicilawal || '',
                 members: [

@@ -210,15 +210,36 @@ export default function BatchShow({
                                             NOKA
                                         </th>
                                         <th className="px-6 py-3 font-medium">
+                                            Nama Entitas
+                                        </th>
+                                        <th className="px-6 py-3 font-medium">
                                             Kategori
                                         </th>
                                         <th className="px-6 py-3 font-medium">
-                                            Alasan Skip / Pesan
+                                            Penjelasan Kategori
+                                        </th>
+                                        <th className="px-6 py-3 font-medium">
+                                            Pesan
                                         </th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-slate-100">
-                                    {import_errors.map((err, i) => (
+                                    {import_errors.map((err, i) => {
+                                        let penjelasan = '';
+                                        switch(err.kategori) {
+                                            case 'Duplicate':
+                                                penjelasan = 'Data persis sama dengan baris lain di file ini (diabaikan).';
+                                                break;
+                                            case 'Invalid':
+                                                penjelasan = 'Data tidak lengkap atau format salah (diabaikan).';
+                                                break;
+                                            case 'Warning':
+                                                penjelasan = 'Data tetap diimport, tapi ada catatan khusus.';
+                                                break;
+                                            default:
+                                                penjelasan = 'Ada masalah pada data ini.';
+                                        }
+                                        return (
                                         <tr
                                             key={i}
                                             className="hover:bg-slate-50"
@@ -232,6 +253,9 @@ export default function BatchShow({
                                                 {err.noka ||
                                                     err.data?.noka ||
                                                     '-'}
+                                            </td>
+                                            <td className="px-6 py-3">
+                                                {err.namaentitas || '-'}
                                             </td>
                                             <td className="px-6 py-3">
                                                 <span
@@ -254,13 +278,16 @@ export default function BatchShow({
                                                     {err.kategori || 'Error'}
                                                 </span>
                                             </td>
+                                            <td className="px-6 py-3 text-xs text-slate-500">
+                                                {penjelasan}
+                                            </td>
                                             <td
                                                 className={`px-6 py-3 ${err.kategori === 'Warning' ? 'text-amber-600' : err.kategori === 'Duplicate' ? 'text-slate-600' : 'text-red-600'}`}
                                             >
                                                 {err.reason}
                                             </td>
                                         </tr>
-                                    ))}
+                                    )})}
                                 </tbody>
                             </table>
                         </div>

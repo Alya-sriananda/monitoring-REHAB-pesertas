@@ -28,6 +28,7 @@ interface Peserta {
     no_hp: string;
     status_aktif: string;
     updated_at: string;
+    status_proses?: string;
     daerah?: {
         nama: string;
     };
@@ -73,6 +74,7 @@ export default function PesertaIndex({
     const [daerahId, setDaerahId] = useState(filters.daerah_id || '');
     const [batchId, setBatchId] = useState(filters.batch_id || '');
     const [statusRehab, setStatusRehab] = useState(filters.status_rehab || '');
+    const [statusProses, setStatusProses] = useState(filters.status_proses || '');
 
     useEffect(() => {
         // Skip first render if values are same as initial filters
@@ -80,7 +82,8 @@ export default function PesertaIndex({
             debouncedSearch === (filters.search || '') &&
             daerahId === (filters.daerah_id || '') &&
             batchId === (filters.batch_id || '') &&
-            statusRehab === (filters.status_rehab || '')
+            statusRehab === (filters.status_rehab || '') &&
+            statusProses === (filters.status_proses || '')
         ) {
             return;
         }
@@ -92,6 +95,7 @@ export default function PesertaIndex({
                 daerah_id: daerahId,
                 batch_id: batchId,
                 status_rehab: statusRehab,
+                status_proses: statusProses,
             },
             {
                 preserveState: true,
@@ -99,7 +103,7 @@ export default function PesertaIndex({
                 replace: true,
             },
         );
-    }, [debouncedSearch, daerahId, batchId, statusRehab]);
+    }, [debouncedSearch, daerahId, batchId, statusRehab, statusProses]);
 
     const formatCurrency = (value: any) => {
         if (!value) return 'Rp 0';
@@ -172,11 +176,25 @@ export default function PesertaIndex({
                                 </select>
 
                                 <select
+                                    className="rounded-md border-slate-300 text-sm focus:border-[#22577A] focus:ring-[#22577A]"
+                                    value={statusProses}
+                                    onChange={(e) =>
+                                        setStatusProses(e.target.value)
+                                    }
+                                >
+                                    <option value="">Semua Status Proses</option>
+                                    <option value="BELUM DIVERIFIKASI">BELUM DIVERIFIKASI</option>
+                                    <option value="TERVERIFIKASI">TERVERIFIKASI</option>
+                                    <option value="PERLU FOLLOW-UP">PERLU FOLLOW-UP</option>
+                                    <option value="SUDAH DIHUBUNGI">SUDAH DIHUBUNGI</option>
+                                </select>
+
+                                <select
                                     className="max-w-[200px] truncate rounded-md border-slate-300 text-sm focus:border-[#22577A] focus:ring-[#22577A]"
                                     value={batchId}
                                     onChange={(e) => setBatchId(e.target.value)}
                                 >
-                                    <option value="">Semua Batch</option>
+                                    {batches.length === 0 && <option value="">Belum ada batch</option>}
                                     {batches.map((b: any) => (
                                         <option key={b.id} value={b.id}>
                                             {b.tanggal_data} - {b.nama_file}
@@ -202,6 +220,9 @@ export default function PesertaIndex({
                                     </th>
                                     <th className="px-6 py-3 font-medium">
                                         Daerah
+                                    </th>
+                                    <th className="px-6 py-3 font-medium">
+                                        Status Proses
                                     </th>
                                     <th className="px-6 py-3 font-medium">
                                         Status REHAB
@@ -265,6 +286,25 @@ export default function PesertaIndex({
                                                 <td className="px-6 py-4">
                                                     {peserta.daerah?.nama ||
                                                         '-'}
+                                                </td>
+                                                <td className="px-6 py-4">
+                                                    {peserta.status_proses ? (
+                                                        <span
+                                                            className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                                                                peserta.status_proses === 'BELUM DIVERIFIKASI'
+                                                                    ? 'bg-slate-100 text-slate-800'
+                                                                    : peserta.status_proses === 'PERLU FOLLOW-UP'
+                                                                    ? 'bg-orange-100 text-orange-800'
+                                                                    : peserta.status_proses === 'SUDAH DIHUBUNGI'
+                                                                    ? 'bg-blue-100 text-blue-800'
+                                                                    : 'bg-green-100 text-green-800'
+                                                            }`}
+                                                        >
+                                                            {peserta.status_proses}
+                                                        </span>
+                                                    ) : (
+                                                        '-'
+                                                    )}
                                                 </td>
                                                 <td className="px-6 py-4">
                                                     {hasRehab ? (

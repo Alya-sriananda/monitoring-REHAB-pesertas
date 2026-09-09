@@ -42,8 +42,6 @@ class ProfileUpdateTest extends TestCase
         $this->assertSame('test@example.com', $user->email);
     }
 
-
-
     public function test_user_can_delete_their_account()
     {
         $user = User::factory()->create(['must_change_password' => false]);

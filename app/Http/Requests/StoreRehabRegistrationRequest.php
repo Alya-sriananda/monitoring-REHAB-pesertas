@@ -14,6 +14,7 @@ class StoreRehabRegistrationRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'batch_id' => ['required', 'exists:batches,id'],
             // SIPP Verification Snapshot
             'sipp_terdaftar_rehab' => ['required', 'boolean'],
             'sipp_id_cicilan' => ['nullable', 'string', 'max:100'],

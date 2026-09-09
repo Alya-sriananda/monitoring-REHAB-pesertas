@@ -146,52 +146,45 @@ class BatchImportService
                 'import_errors' => [],
             ];
 
-            $reader->getRows()->each(function (array $rowProperties) use (&$stats, &$seenNokas, $daerahCache, $batch) {
+            $seenRows = [];
+
+            $reader->getRows()->each(function (array $rowProperties) use (&$stats, &$seenRows, $daerahCache, $batch) {
                 $stats['jumlah_row_asli']++;
 
                 $row = $this->normalizeRow($rowProperties);
                 $noka = $row['noka'] ?? null;
+                $namaentitas = $row['namaentitas'] ?? null;
 
                 if (! $noka) {
                     $stats['jumlah_invalid']++;
                     $stats['import_errors'][] = [
                         'row' => $stats['jumlah_row_asli'],
                         'noka' => 'N/A',
+                        'namaentitas' => $namaentitas,
                         'kategori' => 'Invalid',
-                        'reason' => 'Invalid Noka'
+                        'reason' => 'Invalid Noka (Kosong)',
                     ];
 
                     return;
                 }
 
-                if (isset($seenNokas[$noka])) {
-                    $prevRow = $seenNokas[$noka];
-                    $conflictField = $this->isConflict($prevRow, $row);
-                    if ($conflictField !== false) {
-                        $stats['jumlah_conflict']++;
-                        $stats['import_errors'][] = [
-                            'row' => $stats['jumlah_row_asli'],
-                            'noka' => $noka,
-                            'kategori' => 'Conflict',
-                            'reason' => 'Data berbeda pada field: ' . $conflictField
-                        ];
-                    } else {
-                        $stats['jumlah_duplicate']++;
-                        $stats['import_errors'][] = [
-                            'row' => $stats['jumlah_row_asli'],
-                            'noka' => $noka,
-                            'kategori' => 'Duplicate',
-                            'reason' => 'Baris identik dengan baris sebelumnya'
-                        ];
-                    }
+                $rowHash = md5(json_encode($row));
+                if (isset($seenRows[$rowHash])) {
+                    $stats['jumlah_duplicate']++;
+                    $stats['import_errors'][] = [
+                        'row' => $stats['jumlah_row_asli'],
+                        'noka' => $noka,
+                        'namaentitas' => $namaentitas,
+                        'kategori' => 'Duplicate',
+                        'reason' => 'Baris identik dengan baris sebelumnya',
+                    ];
 
                     return;
                 }
-
-                $seenNokas[$noka] = $row;
+                $seenRows[$rowHash] = true;
                 $stats['jumlah_row_valid']++;
 
-                // Map Daerah
+                // Validate Daerah
                 $daerahId = null;
                 if (! empty($row['nmdati2'])) {
                     $daerahName = self::normalizeDaerahName($row['nmdati2']);
@@ -200,8 +193,9 @@ class BatchImportService
                         $stats['import_errors'][] = [
                             'row' => $stats['jumlah_row_asli'],
                             'noka' => $noka,
+                            'namaentitas' => $namaentitas,
                             'kategori' => 'Warning',
-                            'reason' => "Daerah {$row['nmdati2']} tidak ditemukan di master."
+                            'reason' => "Daerah {$row['nmdati2']} tidak ditemukan di master.",
                         ];
                     }
                 }
@@ -232,48 +226,51 @@ class BatchImportService
                     $stats['jumlah_peserta_diperbarui']++;
                 }
 
-                // Create PesertaBatch Snapshot
-                PesertaBatch::create([
-                    'batch_id' => $batch->id,
-                    'peserta_id' => $peserta->id,
-                    'data_source' => 'excel',
-                    'statusaktif' => $row['statusaktif'] ?? null,
-                    'total_peserta' => $row['total_peserta'] ?? null,
-                    'zero' => $row['zero'] ?? null,
-                    'alamat' => $row['alamat'] ?? null,
-                    'bulan_menunggak' => $row['bulan_menunggak'] ?? null,
-                    'cabang_kd' => $row['cabang_kd'] ?? null,
-                    'divre_kd' => $row['divre_kd'] ?? null,
-                    'email' => $row['email'] ?? null,
-                    'endcicilan' => $row['endcicilan'] ?? null,
-                    'idcicilan' => $row['idcicilan'] ?? null,
-                    'index_data' => $row['index_data'] ?? null,
-                    'jmlbulancicilawal' => $row['jmlbulancicilawal'] ?? null,
-                    'jmlbulanmenunggakawal' => $row['jmlbulanmenunggakawal'] ?? null,
-                    'kanal_pendaftaran' => $row['kanal_pendaftaran'] ?? null,
-                    'kantor_cabang' => $row['kantor_cabang'] ?? null,
-                    'kddati2' => $row['kddati2'] ?? null,
-                    'kddesa' => $row['kddesa'] ?? null,
-                    'kdkec' => $row['kdkec'] ?? null,
-                    'kelas' => $row['kelas'] ?? null,
-                    'kelas_group' => $row['kelas_group'] ?? null,
-                    'namaentitas' => $row['namaentitas'] ?? null,
-                    'nmdati2' => $row['nmdati2'] ?? null,
-                    'nmdesa' => $row['nmdesa'] ?? null,
-                    'nmkc' => $row['nmkc'] ?? null,
-                    'nmkec' => $row['nmkec'] ?? null,
-                    'noentitas' => $row['noka'] ?? null, // using normalized NOKA
-                    'nohp' => $row['nohp'] ?? null,
-                    'nopendaftar' => $row['nopendaftar'] ?? null,
-                    'nopenghubung' => $row['nopenghubung'] ?? null,
-                    'startcicilan' => $row['startcicilan'] ?? null,
-                    'tanggalupdatedata' => $row['tanggalupdatedata'] ?? null,
-                    'tglcicilan' => $row['tglcicilan'] ?? null,
-                    'tottagbulanberjalanawal' => $row['tottagbulanberjalanawal'] ?? null,
-                    'tottagmenunggakawal' => $row['tottagmenunggakawal'] ?? null,
-                    'tottagsdbulaniniawal' => $row['tottagsdbulaniniawal'] ?? null,
-                    'user_sipp' => $row['user_sipp'] ?? null,
-                ]);
+                // Create or Update PesertaBatch Snapshot
+                PesertaBatch::updateOrCreate(
+                    [
+                        'batch_id' => $batch->id,
+                        'peserta_id' => $peserta->id,
+                    ],
+                    [
+                        'data_source' => 'excel',
+                        'statusaktif' => $row['statusaktif'] ?? null,
+                        'total_peserta' => $row['total_peserta'] ?? null,
+                        'zero' => $row['zero'] ?? null,
+                        'alamat' => $row['alamat'] ?? null,
+                        'bulan_menunggak' => $row['bulan_menunggak'] ?? null,
+                        'cabang_kd' => $row['cabang_kd'] ?? null,
+                        'divre_kd' => $row['divre_kd'] ?? null,
+                        'email' => $row['email'] ?? null,
+                        'endcicilan' => $row['endcicilan'] ?? null,
+                        'idcicilan' => $row['idcicilan'] ?? null,
+                        'index_data' => $row['index_data'] ?? null,
+                        'jmlbulancicilawal' => $row['jmlbulancicilawal'] ?? null,
+                        'jmlbulanmenunggakawal' => $row['jmlbulanmenunggakawal'] ?? null,
+                        'kanal_pendaftaran' => $row['kanal_pendaftaran'] ?? null,
+                        'kantor_cabang' => $row['kantor_cabang'] ?? null,
+                        'kddati2' => $row['kddati2'] ?? null,
+                        'kddesa' => $row['kddesa'] ?? null,
+                        'kdkec' => $row['kdkec'] ?? null,
+                        'kelas' => $row['kelas'] ?? null,
+                        'kelas_group' => $row['kelas_group'] ?? null,
+                        'namaentitas' => $row['namaentitas'] ?? null,
+                        'nmdati2' => $row['nmdati2'] ?? null,
+                        'nmdesa' => $row['nmdesa'] ?? null,
+                        'nmkc' => $row['nmkc'] ?? null,
+                        'nmkec' => $row['nmkec'] ?? null,
+                        'noentitas' => $row['noka'] ?? null, // using normalized NOKA
+                        'nohp' => $row['nohp'] ?? null,
+                        'nopendaftar' => $row['nopendaftar'] ?? null,
+                        'nopenghubung' => $row['nopenghubung'] ?? null,
+                        'startcicilan' => $row['startcicilan'] ?? null,
+                        'tanggalupdatedata' => $row['tanggalupdatedata'] ?? null,
+                        'tglcicilan' => $row['tglcicilan'] ?? null,
+                        'tottagbulanberjalanawal' => $row['tottagbulanberjalanawal'] ?? null,
+                        'tottagmenunggakawal' => $row['tottagmenunggakawal'] ?? null,
+                        'tottagsdbulaniniawal' => $row['tottagsdbulaniniawal'] ?? null,
+                        'user_sipp' => $row['user_sipp'] ?? null,
+                    ]);
             });
 
             // Update Batch
@@ -394,9 +391,9 @@ class BatchImportService
         ];
 
         foreach ($importantFields as $field) {
-            $val1 = isset($row1[$field]) ? trim((string)$row1[$field]) : '';
-            $val2 = isset($row2[$field]) ? trim((string)$row2[$field]) : '';
-            
+            $val1 = isset($row1[$field]) ? trim((string) $row1[$field]) : '';
+            $val2 = isset($row2[$field]) ? trim((string) $row2[$field]) : '';
+
             if ($val1 !== $val2) {
                 return $field;
             }

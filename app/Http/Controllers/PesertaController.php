@@ -12,7 +12,39 @@ class PesertaController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Peserta::with(['daerah', 'rehabCaseMembers.case', 'batches.batch']);
+        $daerahs = Daerah::whereHas('pesertas')->orderBy('nama')->get();
+        $batches = Batch::orderBy('tanggal_data', 'desc')->get(['id', 'nama_file', 'tanggal_data']);
+
+        $latestBatch = $batches->first();
+        $batchId = $request->input('batch_id');
+        if (empty($batchId)) {
+            $batchId = $latestBatch?->id;
+        }
+
+        if (! $batchId) {
+            $pesertas = Peserta::whereRaw('1=0')->paginate(15);
+
+            return Inertia::render('peserta/index', [
+                'pesertas' => $pesertas,
+                'filters' => [
+                    'search' => $request->input('search'),
+                    'daerah_id' => $request->input('daerah_id'),
+                    'batch_id' => $batchId,
+                    'status_rehab' => $request->input('status_rehab'),
+                    'status_proses' => $request->input('status_proses'),
+                ],
+                'daerahs' => $daerahs,
+                'batches' => $batches,
+            ]);
+        }
+
+        $activeBatch = Batch::find($batchId);
+
+        $query = Peserta::select('pesertas.*')
+            ->with(['daerah', 'rehabCaseMembers.case', 'batches.batch'])
+            ->forWorkQueue($activeBatch)
+            ->withTunggakanStats($activeBatch)
+            ->withStatusProses($activeBatch);
 
         if ($request->filled('search')) {
             $search = $request->input('search');
@@ -27,12 +59,6 @@ class PesertaController extends Controller
             $query->where('daerah_id', $request->input('daerah_id'));
         }
 
-        if ($request->filled('batch_id')) {
-            $query->whereHas('batches', function ($q) use ($request) {
-                $q->where('batch_id', $request->input('batch_id'));
-            });
-        }
-
         if ($request->filled('status_rehab')) {
             $status = $request->input('status_rehab');
             if ($status === 'ada') {
@@ -42,18 +68,28 @@ class PesertaController extends Controller
             }
         }
 
-        $query->orderBy('updated_at', 'desc');
+        if ($request->filled('status_proses')) {
+            $query->whereStatusProses($activeBatch, $request->input('status_proses'));
+        }
+
+        $query->orderBy('jumlah_bulan_menunggak', 'desc')
+            ->orderBy('sisa_tunggakan', 'desc')
+            ->orderBy('pesertas.updated_at', 'desc');
 
         $pesertas = $query->paginate(15)->withQueryString();
 
-        $daerahs = Daerah::whereHas('pesertas')->orderBy('nama')->get();
-        $batches = Batch::orderBy('tanggal_data', 'desc')->get(['id', 'nama_file', 'tanggal_data']);
-
         return Inertia::render('peserta/index', [
             'pesertas' => $pesertas,
-            'filters' => $request->only(['search', 'daerah_id', 'batch_id', 'status_rehab']),
+            'filters' => [
+                'search' => $request->input('search'),
+                'daerah_id' => $request->input('daerah_id'),
+                'batch_id' => $batchId,
+                'status_rehab' => $request->input('status_rehab'),
+                'status_proses' => $request->input('status_proses'),
+            ],
             'daerahs' => $daerahs,
             'batches' => $batches,
+            'activeBatch' => $activeBatch,
         ]);
     }
 
