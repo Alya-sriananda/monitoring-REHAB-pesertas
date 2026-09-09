@@ -100,6 +100,15 @@ export default function PesertaShow({ peserta, candidates = [], latestBatch }: {
     const historicalCases = peserta.rehab_case_members?.filter(m => m.case?.status_rehab !== 'AKTIF') || [];
     const activeCase = activeCases[0];
 
+    const calculateTotalCicilanSampaiBulanIni = (installments: any[] = []) => {
+        const currentDate = new Date();
+        const currentYearMonth = currentDate.toISOString().substring(0, 7); // e.g., "2026-09"
+        
+        return installments
+            .filter((inst) => inst.periode_bulan && inst.periode_bulan.substring(0, 7) <= currentYearMonth)
+            .reduce((sum, inst) => sum + parseFloat(inst.besaran_cicilan || '0'), 0);
+    };
+
     const renderCaseDetail = (member: any, isHistorical = false) => {
         // Check if there are different installment amounts (Custom Schedule)
         const isCustomSchedule = member.installments && new Set(member.installments.map((i: any) => parseFloat(i.besaran_cicilan))).size > 2;
@@ -132,12 +141,9 @@ export default function PesertaShow({ peserta, candidates = [], latestBatch }: {
                 {/* Financial Summary */}
                 <div className="mb-8 grid grid-cols-2 gap-4 sm:grid-cols-4">
                     <div className="rounded-lg border border-slate-200 bg-white p-4">
-                        <div className="mb-1 text-xs font-medium text-slate-500">Bulan Menunggak</div>
+                        <div className="mb-1 text-xs font-medium text-slate-500">Lama Cicilan</div>
                         <div className="text-lg font-semibold text-slate-900">
-                            {member.jml_bulan_menunggak_awal} <span className="text-sm font-normal text-slate-500">Bulan</span>
-                        </div>
-                        <div className="text-xs font-medium text-slate-500 mt-1">
-                            Lama Cicilan: {member.installments?.length || 0} Bulan
+                            {member.installments?.length || 0} <span className="text-sm font-normal text-slate-500">Bulan</span>
                         </div>
                     </div>
                     <div className="rounded-lg border border-slate-200 bg-white p-4">
@@ -148,14 +154,10 @@ export default function PesertaShow({ peserta, candidates = [], latestBatch }: {
                     </div>
                     <div className="rounded-lg border border-slate-200 bg-white p-4">
                         <div className="mb-1 text-xs font-medium text-slate-500">
-                            Cicilan per Bulan
+                            Total Cicilan hingga bulan ini
                         </div>
                         <div className="text-lg font-semibold text-[#22577A]">
-                            {isCustomSchedule ? (
-                                <span className="text-sm font-medium text-amber-600 bg-amber-50 px-2 py-1 rounded">Bervariasi (Khusus)</span>
-                            ) : (
-                                formatCurrency(member.cicilan_bulanan)
-                            )}
+                            {formatCurrency(calculateTotalCicilanSampaiBulanIni(member.installments))}
                         </div>
                     </div>
                     <div className="rounded-lg border border-red-100 bg-red-50 p-4">
