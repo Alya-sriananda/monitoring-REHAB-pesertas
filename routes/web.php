@@ -25,6 +25,9 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/{peserta}', [PesertaController::class, 'show'])->name('show');
         Route::post('/{peserta}/rehab', [RehabRegistrationController::class, 'store'])->name('rehab.store');
     });
+
+    // Payment Monitoring
+    Route::post('/rehab-cases/{rehab_case}/payments', [\App\Http\Controllers\PaymentMonitoringController::class, 'store'])->name('rehab-cases.payments.store');
 });
 
 require __DIR__.'/settings.php';

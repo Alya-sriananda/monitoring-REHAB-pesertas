@@ -98,8 +98,11 @@ class PesertaController extends Controller
         $peserta->load([
             'daerah',
             'batches.batch',
-            'rehabCaseMembers.case',
+            'rehabCaseMembers.case.members.peserta',
             'rehabCaseMembers.installments',
+            'rehabCaseMembers.case.members.installments' => function ($query) {
+                $query->orderBy('periode_bulan');
+            },
             'sippVerifications' => function ($query) {
                 $query->orderBy('tanggal_cek', 'desc');
             },

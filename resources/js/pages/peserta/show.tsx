@@ -5,6 +5,7 @@ import { dashboard } from '@/routes';
 import pesertaRoute from '@/routes/peserta';
 import { useState } from 'react';
 import { RehabRegistrationModal } from './partials/RehabRegistrationModal';
+import { PaymentMonitoring } from './partials/PaymentMonitoring';
 import { Button } from '@/components/ui/button';
 import {
     User,
@@ -57,6 +58,7 @@ interface PesertaDetail {
             tanggal_data: string;
             status_proses: string;
         };
+        user_sipp?: string | null;
     }[];
     sipp_verifications?: {
         id: number;
@@ -106,6 +108,7 @@ export default function PesertaShow({ peserta, candidates = [], latestBatch }: {
         
         return installments
             .filter((inst) => inst.periode_bulan && inst.periode_bulan.substring(0, 7) <= currentYearMonth)
+            .filter((inst) => !inst.tanggal_bayar) // Hanya hitung yang belum dibayar
             .reduce((sum, inst) => sum + parseFloat(inst.besaran_cicilan || '0'), 0);
     };
 
@@ -132,7 +135,7 @@ export default function PesertaShow({ peserta, candidates = [], latestBatch }: {
                             Petugas Pendaftar (NPP)
                         </div>
                         <div className="text-sm font-medium text-slate-900">
-                            {member.case?.npp_petugas || '-'}
+                            {peserta.batches?.[0]?.user_sipp || '-'}
                         </div>
                     </div>
                     <div className="text-right">
@@ -175,52 +178,6 @@ export default function PesertaShow({ peserta, candidates = [], latestBatch }: {
                         </div>
                     </div>
                 </div>
-
-                {/* Riwayat Cicilan */}
-                <h3 className="mb-3 border-b border-slate-200 pb-2 text-sm font-semibold text-slate-800">
-                    Jadwal & Riwayat Pembayaran
-                </h3>
-                {member.installments && member.installments.length > 0 ? (
-                    <div className="overflow-hidden rounded-lg border border-slate-200">
-                        <table className="w-full text-left text-sm">
-                            <thead className="bg-slate-50 text-slate-600">
-                                <tr>
-                                    <th className="px-4 py-3 font-medium">Bulan/Tahun</th>
-                                    <th className="px-4 py-3 text-right font-medium">Tagihan</th>
-                                    <th className="px-4 py-3 font-medium">Tanggal Bayar</th>
-                                    <th className="px-4 py-3 font-medium">Status</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-slate-200 bg-white">
-                                {member.installments.map((inst: any) => (
-                                    <tr key={inst.id}>
-                                        <td className="px-4 py-3 font-medium text-slate-900">
-                                            Cicilan ke-{inst.nomor_cicilan}
-                                            <div className="text-xs text-slate-500 font-normal">
-                                                {new Date(inst.periode_bulan).toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })}
-                                            </div>
-                                        </td>
-                                        <td className="px-4 py-3 text-right text-slate-900">
-                                            {formatCurrency(inst.besaran_cicilan)}
-                                        </td>
-                                        <td className="px-4 py-3 whitespace-nowrap text-slate-600">
-                                            {formatDate(inst.tanggal_bayar)}
-                                        </td>
-                                        <td className="px-4 py-3">
-                                            <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${inst.tanggal_bayar !== null ? 'bg-green-100 text-green-800' : 'bg-amber-100 text-amber-800'}`}>
-                                                {inst.tanggal_bayar !== null ? 'Lunas' : 'Belum Lunas'}
-                                            </span>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                ) : (
-                    <div className="rounded-lg border border-dashed border-slate-200 p-8 text-center">
-                        <p className="text-sm text-slate-500">Tidak ada jadwal cicilan yang ditemukan.</p>
-                    </div>
-                )}
             </div>
         );
     };
@@ -450,6 +407,7 @@ export default function PesertaShow({ peserta, candidates = [], latestBatch }: {
                                             <div key={member.id} className={idx > 0 ? 'border-t border-slate-200 pt-8' : ''}>
                                                 <h3 className="text-lg font-bold text-[#22577A] mb-4">Program REHAB Aktif</h3>
                                                 {renderCaseDetail(member)}
+                                                {member.case && <PaymentMonitoring rehabCase={member.case as any} />}
                                             </div>
                                         ))}
                                         
