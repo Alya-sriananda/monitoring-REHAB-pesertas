@@ -58,6 +58,12 @@ interface PesertaDetail {
             status_proses: string;
         };
     }[];
+    sipp_verifications?: {
+        id: number;
+        tanggal_cek: string;
+        terdaftar_rehab: boolean;
+        catatan: string | null;
+    }[];
 }
 
 export default function PesertaShow({ peserta, candidates = [], latestBatch }: { peserta: PesertaDetail, candidates?: any[], latestBatch?: any }) {
@@ -388,13 +394,42 @@ export default function PesertaShow({ peserta, candidates = [], latestBatch }: {
                                             <CreditCard className="h-8 w-8 text-slate-300" />
                                         </div>
                                         <h3 className="mb-1 text-lg font-medium text-slate-900">
-                                            Belum Terdaftar REHAB
+                                            Belum Terdaftar Program REHAB
                                         </h3>
-                                        <p className="max-w-sm text-sm text-slate-500">
-                                            Peserta ini belum memiliki data
-                                            kepesertaan maupun riwayat cicilan
-                                            program REHAB.
-                                        </p>
+                                        
+                                        {peserta.sipp_verifications && peserta.sipp_verifications.length > 0 ? (
+                                            <div className="mt-6 rounded-lg border border-slate-200 bg-white p-4 text-left shadow-sm max-w-md w-full">
+                                                <h4 className="font-semibold text-slate-800 border-b pb-2 mb-3">Status Verifikasi SIPP Terakhir</h4>
+                                                <div className="space-y-2 text-sm">
+                                                    <div className="flex justify-between">
+                                                        <span className="text-slate-500">Tanggal Cek:</span>
+                                                        <span className="font-medium text-slate-900">
+                                                            {new Date(peserta.sipp_verifications[0].tanggal_cek).toLocaleDateString('id-ID', {
+                                                                day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit'
+                                                            })}
+                                                        </span>
+                                                    </div>
+                                                    <div className="flex justify-between">
+                                                        <span className="text-slate-500">Status SIPP:</span>
+                                                        <span className="inline-flex items-center rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-800">
+                                                            {peserta.sipp_verifications[0].terdaftar_rehab ? 'Terdaftar' : 'Tidak Terdaftar / Lunas'}
+                                                        </span>
+                                                    </div>
+                                                    {peserta.sipp_verifications[0].catatan && (
+                                                        <div className="flex justify-between border-t border-slate-100 pt-2 mt-2">
+                                                            <span className="text-slate-500">Catatan:</span>
+                                                            <span className="font-medium text-slate-900 text-right">
+                                                                {peserta.sipp_verifications[0].catatan}
+                                                            </span>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <p className="max-w-sm text-sm text-slate-500 mt-2">
+                                                Peserta ini belum memiliki data kepesertaan maupun riwayat cicilan program REHAB, serta belum pernah diverifikasi SIPP.
+                                            </p>
+                                        )}
                                     </div>
                                 ) : (
                                     <div className="space-y-8">

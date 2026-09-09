@@ -100,6 +100,9 @@ class PesertaController extends Controller
             'batches.batch',
             'rehabCaseMembers.case',
             'rehabCaseMembers.installments',
+            'sippVerifications' => function ($query) {
+                $query->orderBy('tanggal_cek', 'desc');
+            },
         ]);
 
         $candidates = collect();
