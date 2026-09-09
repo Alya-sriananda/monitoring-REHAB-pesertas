@@ -51,4 +51,9 @@ class RehabCase extends Model
         $this->sisa_tunggakan = $this->members()->sum('sisa_tunggakan');
         $this->save();
     }
+
+    public function komunikasis(): HasMany
+    {
+        return $this->hasMany(Komunikasi::class);
+    }
 }

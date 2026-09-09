@@ -160,4 +160,27 @@ class KomunikasiFeatureTest extends TestCase
             'status' => 'tidak_terdaftar_wa',
         ]);
     }
+
+    public function test_it_loads_komunikasis_on_peserta_show()
+    {
+        Komunikasi::create([
+            'rehab_case_id' => $this->rehabCase->id,
+            'peserta_id' => $this->peserta->id,
+            'user_id' => $this->user->id,
+            'template_pesan_id' => $this->template->id,
+            'no_hp' => $this->peserta->no_hp,
+            'periode_bulan' => '2026-09-01',
+            'template' => $this->template->nama_template,
+            'pesan' => 'Test Loaded',
+            'status' => 'sudah_dihubungi',
+            'tanggal_dihubungi' => now(),
+        ]);
+
+        $response = $this->actingAs($this->user)->get("/peserta/{$this->peserta->id}");
+
+        $response->assertStatus(200);
+        $response->assertInertia(fn (\Inertia\Testing\AssertableInertia $page) => $page
+            ->where('peserta.rehab_case_members.0.case.komunikasis.0.pesan', 'Test Loaded')
+        );
+    }
 }

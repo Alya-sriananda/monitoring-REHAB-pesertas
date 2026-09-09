@@ -1,6 +1,7 @@
 import { useState } from 'react';
+import { router } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
-import { MessageCircle, Copy, ExternalLink, Save } from 'lucide-react';
+import { MessageCircle, Copy, ExternalLink, Save, History, CheckCircle2, AlertTriangle, XCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
 export function KomunikasiPanel({ 
@@ -118,6 +119,7 @@ export function KomunikasiPanel({
             if (response.ok) {
                 toast.success(data.message || 'Komunikasi berhasil dicatat');
                 setCatatan('');
+                router.reload({ only: ['peserta'] });
             } else {
                 toast.error(data.message || 'Gagal mencatat komunikasi');
             }
@@ -129,6 +131,10 @@ export function KomunikasiPanel({
     };
 
     if (!templates || templates.length === 0) return null;
+
+    const currentKomunikasis = rehabCase.komunikasis?.filter(
+        (k: any) => k.periode_bulan.substring(0, 7) === selectedPeriod
+    ) || [];
 
     return (
         <div className="rounded-xl border border-[#22577A]/20 bg-white shadow-sm overflow-hidden mt-6">
@@ -181,6 +187,50 @@ export function KomunikasiPanel({
                         >
                             {isLoading ? 'Generating...' : 'Generate Preview'}
                         </Button>
+
+                        {currentKomunikasis.length > 0 && (
+                            <div className="mt-6 pt-6 border-t border-slate-100 space-y-3">
+                                <h4 className="text-sm font-semibold text-slate-800 flex items-center">
+                                    <History className="h-4 w-4 mr-2" /> Riwayat Komunikasi (Periode Ini)
+                                </h4>
+                                <div className="space-y-3 max-h-[250px] overflow-y-auto pr-2">
+                                    {currentKomunikasis.map((kom: any, idx: number) => (
+                                        <div key={idx} className="bg-slate-50 border border-slate-200 rounded-md p-3 text-sm">
+                                            <div className="flex items-center justify-between mb-2">
+                                                <div className="flex items-center gap-1.5 font-medium">
+                                                    {kom.status === 'sudah_dihubungi' && <CheckCircle2 className="h-4 w-4 text-green-600" />}
+                                                    {kom.status === 'tidak_terdaftar_wa' && <AlertTriangle className="h-4 w-4 text-yellow-600" />}
+                                                    {kom.status === 'gagal' && <XCircle className="h-4 w-4 text-red-600" />}
+                                                    
+                                                    <span className={
+                                                        kom.status === 'sudah_dihubungi' ? 'text-green-700' :
+                                                        kom.status === 'tidak_terdaftar_wa' ? 'text-yellow-700' : 'text-red-700'
+                                                    }>
+                                                        {kom.status === 'sudah_dihubungi' ? 'Sudah Dihubungi' :
+                                                         kom.status === 'tidak_terdaftar_wa' ? 'Tidak Terdaftar WA' : 'Gagal'}
+                                                    </span>
+                                                </div>
+                                                <span className="text-xs text-slate-500">
+                                                    {new Date(kom.created_at).toLocaleDateString('id-ID', {
+                                                        day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit'
+                                                    })}
+                                                </span>
+                                            </div>
+                                            {kom.template && (
+                                                <div className="text-xs text-slate-600 mb-1">
+                                                    <span className="font-medium">Template:</span> {kom.template}
+                                                </div>
+                                            )}
+                                            {kom.catatan && (
+                                                <div className="text-xs text-slate-600 italic border-l-2 border-slate-300 pl-2 mt-1">
+                                                    "{kom.catatan}"
+                                                </div>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
                     </div>
 
                     {/* Panel Kanan: Preview & Actions */}

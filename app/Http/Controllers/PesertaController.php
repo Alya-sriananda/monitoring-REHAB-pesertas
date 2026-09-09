@@ -105,6 +105,9 @@ class PesertaController extends Controller
             'rehabCaseMembers.case.members.installments' => function ($query) {
                 $query->orderBy('periode_bulan');
             },
+            'rehabCaseMembers.case.komunikasis' => function ($query) {
+                $query->orderBy('created_at', 'desc');
+            },
             'sippVerifications' => function ($query) {
                 $query->orderBy('tanggal_cek', 'desc');
             },
