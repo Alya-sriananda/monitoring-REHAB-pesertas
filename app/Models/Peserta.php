@@ -115,8 +115,8 @@ class Peserta extends Model
             CASE 
                 WHEN EXISTS (
                     SELECT 1 FROM komunikasis k
-                    INNER JOIN rehab_cases rc ON k.rehab_case_id = rc.id
-                    WHERE rc.peserta_id = pesertas.id 
+                    INNER JOIN rehab_case_members rcm ON k.rehab_case_id = rcm.rehab_case_id
+                    WHERE rcm.peserta_id = pesertas.id 
                       AND k.periode_bulan LIKE '{$cutoffDate}%'
                       AND k.status = 'sudah_dihubungi'
                 ) THEN 'SUDAH DIHUBUNGI'
@@ -124,7 +124,7 @@ class Peserta extends Model
                     SELECT 1 FROM rehab_installments ri
                     INNER JOIN rehab_case_members rcm ON ri.rehab_case_member_id = rcm.id
                     INNER JOIN rehab_cases rc ON rcm.rehab_case_id = rc.id
-                    WHERE rc.peserta_id = pesertas.id
+                    WHERE rcm.peserta_id = pesertas.id
                       AND rc.status_rehab = 'AKTIF'
                       AND ri.tanggal_bayar IS NULL
                       AND ri.periode_bulan <= '{$cutoffDate} 23:59:59'

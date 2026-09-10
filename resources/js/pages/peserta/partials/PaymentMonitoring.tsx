@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useForm, router } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
-import { CreditCard, Calendar, CheckCircle2, XCircle, AlertTriangle } from 'lucide-react';
+import { CreditCard, Calendar, CheckCircle2, XCircle, AlertTriangle, FileText } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { KomunikasiPanel } from './KomunikasiPanel';
@@ -196,9 +196,20 @@ export function PaymentMonitoring({ rehabCase, templates }: { rehabCase: RehabCa
 
     return (
         <div className="rounded-xl border border-[#22577A]/20 bg-white shadow-sm overflow-hidden mt-6">
-            <div className="flex items-center gap-2 border-b border-[#22577A]/10 bg-[#22577A]/5 px-6 py-4">
-                <CreditCard className="h-5 w-5 text-[#22577A]" />
-                <h2 className="font-semibold text-[#22577A]">Payment Monitoring Keluarga</h2>
+            <div className="flex items-center justify-between border-b border-[#22577A]/10 bg-[#22577A]/5 px-6 py-4">
+                <div className="flex items-center gap-2">
+                    <CreditCard className="h-5 w-5 text-[#22577A]" />
+                    <h2 className="font-semibold text-[#22577A]">Payment Monitoring Keluarga</h2>
+                </div>
+                <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="text-[#22577A] border-[#22577A]/30 hover:bg-[#22577A]/10"
+                    onClick={() => window.open(`/rehab-cases/${rehabCase.id}/pdf`, '_blank')}
+                >
+                    <FileText className="h-4 w-4 mr-2" />
+                    Generate PDF
+                </Button>
             </div>
             
             <div className="p-6">

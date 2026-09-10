@@ -9,6 +9,7 @@ use App\Models\RehabCaseMember;
 use App\Models\TemplatePesan;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Inertia\Testing\AssertableInertia;
 use Tests\TestCase;
 
 class KomunikasiFeatureTest extends TestCase
@@ -179,7 +180,7 @@ class KomunikasiFeatureTest extends TestCase
         $response = $this->actingAs($this->user)->get("/peserta/{$this->peserta->id}");
 
         $response->assertStatus(200);
-        $response->assertInertia(fn (\Inertia\Testing\AssertableInertia $page) => $page
+        $response->assertInertia(fn (AssertableInertia $page) => $page
             ->where('peserta.rehab_case_members.0.case.komunikasis.0.pesan', 'Test Loaded')
         );
     }

@@ -4,7 +4,9 @@ use App\Http\Controllers\BatchController;
 use App\Http\Controllers\KomunikasiController;
 use App\Http\Controllers\PaymentMonitoringController;
 use App\Http\Controllers\PesertaController;
+use App\Http\Controllers\RehabCasePdfController;
 use App\Http\Controllers\RehabRegistrationController;
+use App\Http\Controllers\TemplateSettingsController;
 use Illuminate\Support\Facades\Route;
 
 Route::redirect('/', '/login')->name('home');
@@ -34,6 +36,16 @@ Route::middleware(['auth'])->group(function () {
     // Komunikasi
     Route::post('/komunikasi/preview', [KomunikasiController::class, 'generatePreview'])->name('komunikasi.preview');
     Route::post('/rehab-cases/{rehab_case}/komunikasi', [KomunikasiController::class, 'store'])->name('rehab-cases.komunikasi.store');
+
+    // PDF
+    Route::get('/rehab-cases/{rehab_case}/pdf', RehabCasePdfController::class)->name('rehab-cases.pdf');
+    // Settings Templates
+    Route::prefix('settings')->name('settings.')->group(function () {
+        Route::get('/templates', [TemplateSettingsController::class, 'index'])->name('templates.index');
+        Route::post('/templates/pesan', [TemplateSettingsController::class, 'storePesan'])->name('templates.pesan.store');
+        Route::put('/templates/pesan/{templatePesan}', [TemplateSettingsController::class, 'updatePesan'])->name('templates.pesan.update');
+        Route::delete('/templates/pesan/{templatePesan}', [TemplateSettingsController::class, 'destroyPesan'])->name('templates.pesan.destroy');
+    });
 });
 
 require __DIR__.'/settings.php';
