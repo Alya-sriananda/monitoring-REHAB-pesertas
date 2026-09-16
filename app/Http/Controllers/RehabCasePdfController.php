@@ -6,13 +6,12 @@ use App\Models\RehabCase;
 use App\Services\RehabCasePdfService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
-use Illuminate\Http\Request;
 
 class RehabCasePdfController extends Controller
 {
     public function __construct(protected RehabCasePdfService $pdfService) {}
 
-    public function __invoke(Request $request, RehabCase $rehabCase)
+    public function __invoke(RehabCase $rehabCase)
     {
         $data = $this->pdfService->buildPdfData($rehabCase->id);
 

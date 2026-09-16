@@ -10,6 +10,25 @@ class RehabCasePdfService
 {
     /**
      * Build data required for the Rehab PDF letter.
+     *
+     * @return array{
+     *     caseData: RehabCase,
+     *     processPeriod: string,
+     *     tanggalData: string,
+     *     jumlahAnggota: int,
+     *     jumlahBulanMenunggak: int,
+     *     rincianTagihan: array<int, array{
+     *         periode_label: string,
+     *         periode_bulan: string,
+     *         member_breakdown: array<string, int>,
+     *         monthly_total: int
+     *     }>,
+     *     totalTunggakan: int,
+     *     isLunas: bool,
+     *     statusMessage: string,
+     *     reminderMessage: string,
+     *     nokaKepalaKeluarga: string
+     * }
      */
     public function buildPdfData(int $rehabCaseId): array
     {
@@ -18,9 +37,8 @@ class RehabCasePdfService
 
         $caseData = RehabCase::with(['peserta', 'members.peserta'])->findOrFail($rehabCaseId);
 
-        // Fetch unpaid installments up to process period
-        // We do this by joining or querying installments directly for members of this case.
         $memberIds = $caseData->members->pluck('id');
+        $jumlahAnggota = $caseData->members->count();
 
         $installments = RehabInstallment::whereIn('rehab_case_member_id', $memberIds)
             ->where('periode_bulan', '<=', $cutoffDate)
@@ -39,7 +57,7 @@ class RehabCasePdfService
         foreach ($groupedInstallments as $month => $monthInstallments) {
             $monthDate = Carbon::createFromFormat('Y-m', $month)->startOfMonth();
 
-            // For a single logical month, we group by member to show breakdown per member
+            // For a single logical month, group by member to show breakdown per member
             $memberBreakdown = [];
             $monthlyTotal = 0;
 
@@ -65,6 +83,7 @@ class RehabCasePdfService
         }
 
         $isLunas = count($rincianTagihan) === 0;
+        $jumlahBulanMenunggak = count($rincianTagihan);
 
         $nextMonth = $processPeriod->copy()->addMonth()->translatedFormat('F Y');
 
@@ -79,11 +98,15 @@ class RehabCasePdfService
         return [
             'caseData' => $caseData,
             'processPeriod' => $processPeriod->translatedFormat('F Y'),
+            'tanggalData' => $processPeriod->translatedFormat('d F Y'),
+            'jumlahAnggota' => $jumlahAnggota,
+            'jumlahBulanMenunggak' => $jumlahBulanMenunggak,
             'rincianTagihan' => $rincianTagihan,
             'totalTunggakan' => $totalTunggakan,
             'isLunas' => $isLunas,
             'statusMessage' => $statusMessage,
             'reminderMessage' => $reminderMessage,
+            'nokaKepalaKeluarga' => $caseData->noka_pendaftar,
         ];
     }
 }
